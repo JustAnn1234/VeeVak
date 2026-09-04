@@ -49,10 +49,10 @@ async function apiAuthGet(path, token) {
 // ── Design tokens ─────────────────────────────────────────────────────
 const THEMES = {
   dark: {
-    bg:"#0d0d0d", surface:"#161616", surface2:"#1e1e1e", border:"#2a2a2a",
+    bg:"#0d0d0d", surface:"#161616", surface2:"#1e1e1e", border:"#363636",
     gold:"#c9920a", goldLight:"#e8a80c", goldDim:"#7a5800",
     green:"#2e7d4f", greenText:"#4ade80", red:"#7d2e2e", redText:"#f87171",
-    textPrimary:"#f0ece4", textSecondary:"#888880", textMuted:"#555550",
+    textPrimary:"#fff8eb", textSecondary:"#b8b5ad", textMuted:"#85827b",
   },
   light: {
     bg:"#f5f3ee", surface:"#ffffff", surface2:"#f0ede5", border:"#ddd8cc",
