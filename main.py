@@ -42,6 +42,11 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 CURRENCY_SYMBOLS = {"NGN": "₦", "USD": "$", "GBP": "£"}
 
 
+@app.get("/")
+async def health_check():
+    return {"status": "ok", "service": "VeeVak API"}
+
+
 # ── Request models ───────────────────────────────────────────────────
 
 class SignupRequest(BaseModel):

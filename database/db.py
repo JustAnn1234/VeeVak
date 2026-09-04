@@ -370,10 +370,10 @@ def get_shop_analytics(shop_id: int) -> dict:
     monthly_expenses = cursor.fetchone()["total"]
 
     # Recent sales
-    cursor.execute("""
+    cursor.execute(fix_sql("""
         SELECT * FROM sales WHERE shop_id = ?
         ORDER BY created_at DESC LIMIT 10
-    """, (shop_id,))
+    """), (shop_id,))
     recent = []
     for r in cursor.fetchall():
         d = dict(r)
