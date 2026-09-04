@@ -295,9 +295,21 @@ async def conversation(req: ConversationRequest):
     latest_text = req.messages[-1].text if req.messages else ""
 
     shop_context = f"Shop name: {req.shop_name}." if req.shop_name else ""
+    analytics = get_shop_analytics(req.shop_id)
+    inventory = get_inventory_for_shop(req.shop_id)
+    inventory_summary = ", ".join(
+        f"{item['product_name']} ({item['stock_qty']} in stock)" for item in inventory
+    ) or "No inventory recorded"
+    business_context = f"""Current business data (use this to answer questions accurately):
+- Today revenue: {analytics['today_revenue']}
+- Today expenses: {analytics['today_expenses']}
+- Today profit: {analytics['today_profit']}
+- Monthly revenue: {analytics['monthly_revenue']}
+- Monthly expenses: {analytics['monthly_expenses']}
+- Inventory: {inventory_summary}"""
     reply = chat_with_context(
         [{"role": m.role, "text": m.text} for m in req.messages],
-        shop_context, GEMINI_API_KEY, sym
+        shop_context, GEMINI_API_KEY, sym, business_context
     )
 
     saved_actions = []

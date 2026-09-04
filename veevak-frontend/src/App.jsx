@@ -486,6 +486,19 @@ const makeStyles = (C) => `
   .profile-actions { display:flex; gap:10px; padding-top:2px; }
   .profile-actions .btn-primary, .profile-actions .btn-secondary { margin-top:0 !important; }
   @media (max-width: 520px) { .profile-actions { flex-direction:column; } }
+  .assistant-launcher { position:fixed; right:24px; bottom:92px; width:54px; height:54px; border:0; border-radius:50%; background:${C.gold}; color:#001819; font-size:22px; cursor:pointer; z-index:80; box-shadow:0 8px 24px rgba(0,0,0,0.35); }
+  .assistant-panel { position:fixed; right:24px; bottom:158px; width:min(380px,calc(100vw - 32px)); height:min(540px,calc(100vh - 190px)); display:flex; flex-direction:column; background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; overflow:hidden; z-index:79; box-shadow:0 16px 48px rgba(0,0,0,0.55); }
+  .assistant-head { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid ${C.border}; }
+  .assistant-head-copy { flex:1; }
+  .assistant-title { color:${C.textPrimary}; font-size:14px; font-weight:600; }
+  .assistant-status { color:${C.textSecondary}; font-size:11px; margin-top:2px; }
+  .assistant-close { border:0; background:transparent; color:${C.textSecondary}; font-size:20px; cursor:pointer; }
+  .assistant-body { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .assistant-input { display:flex; align-items:flex-end; gap:8px; padding:12px; border-top:1px solid ${C.border}; }
+  .assistant-input textarea { min-height:48px; max-height:130px; resize:vertical; }
+  .assistant-mic { width:42px; height:42px; flex-shrink:0; border:1px solid ${C.border}; border-radius:10px; background:${C.surface2}; color:${C.textPrimary}; cursor:pointer; }
+  .assistant-mic.listening { color:${C.redText}; border-color:${C.redText}; }
+  .assistant-hint { color:${C.textMuted}; font-size:10px; text-align:center; padding:0 12px 10px; }
 `;
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -1646,6 +1659,78 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic
   );
 }
 
+function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState([{ role:"ai", text:"Hi. I can log sales, expenses, and inventory, or answer questions about your business." }]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const bottomRef = useRef();
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, open]);
+
+  function toggleVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input is not supported by this browser.");
+      return;
+    }
+    if (listening) return;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-NG";
+    recognition.interimResults = false;
+    recognition.onstart = () => setListening(true);
+    recognition.onresult = e => setInput(prev => `${prev}${prev ? " " : ""}${e.results[0][0].transcript}`);
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+    recognition.start();
+  }
+
+  async function send() {
+    const text = input.trim();
+    if (!text || loading || !shopId) return;
+    const nextMessages = [...messages, { role:"user", text }];
+    setMessages(nextMessages);
+    setInput("");
+    setLoading(true);
+    try {
+      const result = await apiPost("/chat/conversation", {
+        shop_id: shopId, shop_name: shopName || "", currency,
+        messages: nextMessages.map(m => ({ role:m.role === "ai" ? "assistant" : "user", text:m.text })),
+      });
+      setMessages(prev => [...prev, { role:"ai", text:result.reply || "Got it." }]);
+      if (result.saved?.length) onChanged?.();
+    } catch (e) {
+      setMessages(prev => [...prev, { role:"ai", text:"I could not reach the business service. Please try again." }]);
+    }
+    setLoading(false);
+  }
+
+  return (
+    <>
+      {open && <div className="assistant-panel">
+        <div className="assistant-head">
+          <div className="settings-avatar" style={{width:36,height:36,fontSize:15}}>W</div>
+          <div className="assistant-head-copy"><div className="assistant-title">VeeVak Assistant</div><div className="assistant-status">Sales, expenses, inventory and business answers</div></div>
+          <button className="assistant-close" aria-label="Close assistant" onClick={()=>setOpen(false)}>×</button>
+        </div>
+        <div className="assistant-body">
+          {messages.map((message, index) => <div key={index} className={`msg ${message.role}`}><span style={{whiteSpace:"pre-wrap"}}>{message.text}</span></div>)}
+          {loading && <div className="msg ai"><span className="loading-dot"/><span className="loading-dot"/><span className="loading-dot"/></div>}
+          <div ref={bottomRef}/>
+        </div>
+        <div className="assistant-input">
+          <textarea className="chat-input" rows={2} placeholder="Log a sale, expense, stock update, or ask a question" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();send();}}}/>
+          <button className={`assistant-mic ${listening?"listening":""}`} aria-label="Use voice input" onClick={toggleVoice}>{listening ? "■" : "🎙"}</button>
+          <button className="btn-send" onClick={send} disabled={loading||!input.trim()}>➤</button>
+        </div>
+        <div className="assistant-hint">Enter adds a new line. Ctrl+Enter sends.</div>
+      </div>}
+      <button className="assistant-launcher" aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onClick={()=>setOpen(value=>!value)}>{open ? "×" : "✦"}</button>
+    </>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // ROOT
 // ══════════════════════════════════════════════════════════════════════
@@ -1964,6 +2049,8 @@ function confirmLogout() {
             </button>
           ))}
         </nav>
+
+        <FloatingAssistant shopId={activeShopId} shopName={activeShop?.name||""} currency={config.currency} onChanged={triggerRefresh}/>
 
         {showLogoutConfirm && (
           <div className="modal-overlay" onClick={()=>setShowLogoutConfirm(false)}>

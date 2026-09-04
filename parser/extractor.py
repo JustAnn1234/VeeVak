@@ -236,7 +236,7 @@ def extract_inventory_with_gemini(text: str, api_key: str, currency_symbol: str 
         return []
 
 
-def chat_with_context(messages: List[Dict], shop_context: str, api_key: str, currency_symbol: str = "₦") -> str:
+def chat_with_context(messages: List[Dict], shop_context: str, api_key: str, currency_symbol: str = "₦", business_context: str = "") -> str:
     """
     Generates a natural conversational reply given the full message history,
     so the AI Chat assistant actually remembers prior turns instead of
@@ -246,6 +246,7 @@ def chat_with_context(messages: List[Dict], shop_context: str, api_key: str, cur
 
     prompt = f"""You are VeeVak, a friendly AI assistant helping a small business owner log their sales, expenses, and inventory through casual chat.
 {shop_context}
+{business_context}
 
 Respond naturally and conversationally, like a helpful assistant who remembers the conversation so far. Keep replies SHORT (2-3 sentences max). Use {currency_symbol} for any amounts.
 If the seller just told you about a sale, expense, or stock update, acknowledge it warmly and confirm what you understood. If their message is unclear, ask a brief clarifying question.
