@@ -440,7 +440,10 @@ const makeStyles = (C) => `
   .how-list { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
   .how-item { font-size:12px; color:${C.textSecondary}; display:flex; gap:8px; }
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px 16px; }
-  .modal { background:${C.surface}; border:1px solid ${C.border}; border-radius:16px; padding:20px 16px; width:100%; max-width:480px; display:flex; flex-direction:column; gap:14px; max-height:calc(100vh - 40px); overflow-y:auto; }
+  .modal { background:${C.surface}; border:1px solid ${C.border}; border-radius:16px; padding:20px 16px; width:100%; max-width:480px; display:flex; flex-direction:column; gap:14px; max-height:calc(100vh - 40px); overflow-y:auto; margin:auto; }
+  .modal-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .modal-close { width:32px; height:32px; border:1px solid ${C.border}; border-radius:50%; background:transparent; color:${C.textSecondary}; font-size:20px; line-height:1; cursor:pointer; flex-shrink:0; }
+  .modal-close:hover { color:${C.textPrimary}; border-color:${C.gold}; }
   .modal-title { font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600; color:${C.textPrimary}; }
   .section-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
   .section-title { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:${C.textSecondary}; font-weight:500; }
@@ -486,7 +489,8 @@ const makeStyles = (C) => `
   .profile-actions { display:flex; gap:10px; padding-top:2px; }
   .profile-actions .btn-primary, .profile-actions .btn-secondary { margin-top:0 !important; }
   @media (max-width: 520px) { .profile-actions { flex-direction:column; } }
-  .assistant-launcher { position:fixed; right:24px; bottom:92px; width:58px; height:58px; border:0; border-radius:50%; background:${C.gold}; color:#001819; cursor:pointer; z-index:80; box-shadow:0 8px 24px rgba(0,0,0,0.35); animation:assistantBounce 2.8s ease-in-out infinite; }
+  .assistant-launcher { position:fixed; right:24px; bottom:92px; width:58px; height:58px; border:0; border-radius:50%; background:${C.gold}; color:#001819; cursor:grab; z-index:80; box-shadow:0 8px 24px rgba(0,0,0,0.35); animation:assistantBounce 2.8s ease-in-out infinite; touch-action:none; }
+  .assistant-launcher:active { cursor:grabbing; }
   .assistant-launcher:hover { animation-play-state:paused; transform:scale(1.06); }
   .assistant-logo { width:32px; height:26px; display:block; margin:auto; }
   @keyframes assistantBounce { 0%,70%,100%{transform:translateY(0)} 78%{transform:translateY(-8px)} 86%{transform:translateY(0)} 92%{transform:translateY(-4px)} }
@@ -1216,7 +1220,7 @@ function Expenses({ t, currency, shopId, refreshKey, onChanged }) {
       {showForm && (
         <div className="modal-overlay" onClick={()=>setShowForm(false)}>
           <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-title">{t.logExpense}</div>
+            <div className="modal-heading"><div className="modal-title">{t.logExpense}</div><button className="modal-close" aria-label="Close expense form" onClick={()=>setShowForm(false)}>×</button></div>
             <div className="form-field">
               <label className="form-label">{t.description}</label>
               <input className="form-input" placeholder="e.g. Tomatoes and pepper" value={desc} onChange={e=>setDesc(e.target.value)}/>
@@ -1330,7 +1334,7 @@ function Inventory({ t, currency, shopId, refreshKey, onChanged }) {
       {showForm && (
         <div className="modal-overlay" onClick={()=>setShowForm(false)}>
           <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-title">{t.addItem}</div>
+            <div className="modal-heading"><div className="modal-title">{t.addItem}</div><button className="modal-close" aria-label="Close inventory form" onClick={()=>setShowForm(false)}>×</button></div>
             <div className="form-field">
               <label className="form-label">{t.product}</label>
               <input className="form-input" placeholder="e.g. Rice 50kg bag" value={name} onChange={e=>setName(e.target.value)}/>
@@ -1664,6 +1668,9 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic
 
 function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
   const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState(null);
+  const dragRef = useRef(null);
+  const draggedRef = useRef(false);
   const [messages, setMessages] = useState([{ role:"ai", text:"Hi. I can log sales, expenses, and inventory, or answer questions about your business." }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1671,6 +1678,29 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
   const bottomRef = useRef();
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, open]);
+
+  function startDragging(event) {
+    if (open) return;
+    draggedRef.current = false;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const rect = event.currentTarget.getBoundingClientRect();
+    dragRef.current = { offsetX:event.clientX - rect.left, offsetY:event.clientY - rect.top };
+    const move = moveEvent => {
+      if (!dragRef.current) return;
+      draggedRef.current = true;
+      setPosition({
+        left:Math.max(8, Math.min(window.innerWidth - 66, moveEvent.clientX - dragRef.current.offsetX)),
+        top:Math.max(8, Math.min(window.innerHeight - 66, moveEvent.clientY - dragRef.current.offsetY)),
+      });
+    };
+    const stop = () => {
+      dragRef.current = null;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+  }
 
   function toggleVoice() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1729,10 +1759,9 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
         </div>
         <div className="assistant-hint">Enter adds a new line. Ctrl+Enter sends.</div>
       </div>}
-      <button className="assistant-launcher" aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onClick={()=>setOpen(value=>!value)}>
+      <button className="assistant-launcher" style={position ? {left:position.left,top:position.top,right:"auto",bottom:"auto"} : undefined} aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onPointerDown={startDragging} onClick={()=>{if(draggedRef.current){draggedRef.current=false;return;}setOpen(value=>!value);}}>
         {open ? "×" : <svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M8 8 H32 L50 33 L68 8 H92 V55 L78 70 H62 L50 53 L38 70 H22 L8 55 Z" fill="#001819"/>
-          <path d="M22 18 V48 L34 58 L43 40 Z M78 18 V48 L66 58 L57 40 Z M40 22 L50 36 L60 22 L50 48 Z" fill={C.gold}/>
+          <path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill="#001819"/>
         </svg>}
       </button>
     </>
