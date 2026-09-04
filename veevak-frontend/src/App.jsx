@@ -439,7 +439,7 @@ const makeStyles = (C) => `
   .returning-amount { margin-left:auto; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:${C.greenText}; }
   .how-list { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
   .how-item { font-size:12px; color:${C.textSecondary}; display:flex; gap:8px; }
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px 16px; }
+  .modal-overlay { position:fixed; inset:0; width:100vw; height:100dvh; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px 16px; }
   .modal { background:${C.surface}; border:1px solid ${C.border}; border-radius:16px; padding:20px 16px; width:100%; max-width:480px; display:flex; flex-direction:column; gap:14px; max-height:calc(100vh - 40px); overflow-y:auto; margin:auto; }
   .modal-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .modal-close { width:32px; height:32px; border:1px solid ${C.border}; border-radius:50%; background:transparent; color:${C.textSecondary}; font-size:20px; line-height:1; cursor:pointer; flex-shrink:0; }
@@ -1601,15 +1601,16 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
   );
 }
 
-function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic, onSave, onOpenProfile }) {
+function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic, onSave, onOpenProfile, onClose }) {
   const [selLang, setSelLang] = useState(lang);
   const [selCurrency, setSelCurrency] = useState(currency);
   const [name, setName] = useState(bizName);
   return (
     <div className="settings-page">
-      <div className="settings-heading">
-        <h1>{t.settings}</h1>
+      <div className="settings-heading" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
+        <div><h1>{t.settings}</h1>
         <p>Control how VeeVak looks and how your business is represented.</p>
+        </div><button className="modal-close" aria-label="Close settings" onClick={onClose}>×</button>
       </div>
       <div className="settings-panel">
         <div className="settings-panel-head"><div className="settings-panel-title">Account</div><div className="settings-panel-copy">Your personal account and business identity.</div></div>
@@ -1961,7 +1962,7 @@ function confirmLogout() {
     inventory: <Inventory t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey} onChanged={triggerRefresh}/>,
     customers: <Customers t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
     reports:   <Reports t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
-    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")}/>,
+    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")} onClose={()=>setTab("home")}/>,
     profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("settings")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
   };
 

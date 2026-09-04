@@ -1,4 +1,6 @@
 import json
+import csv
+import re
 import requests
 from typing import Dict, List
 
@@ -134,6 +136,9 @@ Message: "{text}"
 
 Comma-separated list only:"""
 
+    if re.search(r"(?im)^\s*TA-[A-Z0-9-]+\s*,", text) or "item sku" in text.lower():
+        return ["inventory"]
+
     raw = _call_gemini(prompt, api_key, max_tokens=20, temperature=0.0)
     if not raw:
         return ["other"]
@@ -222,6 +227,10 @@ JSON OUTPUT:"""
 
 def extract_inventory_with_gemini(text: str, api_key: str, currency_symbol: str = "₦") -> List[Dict]:
     """Extract one or more inventory actions from a single message as a list."""
+    table_items = extract_inventory_table(text)
+    if table_items:
+        return table_items
+
     prompt = build_inventory_extraction_prompt(text, currency_symbol)
     raw_text = _call_gemini(prompt, api_key, max_tokens=512, temperature=0.1)
 
@@ -239,6 +248,30 @@ def extract_inventory_with_gemini(text: str, api_key: str, currency_symbol: str 
         return [i for i in result if i.get("product_name") and i.get("action")]
     except json.JSONDecodeError:
         return []
+
+
+def extract_inventory_table(text: str) -> List[Dict]:
+    """Parse comma-separated SKU rows reliably before asking the model."""
+    items = []
+    for line in text.splitlines():
+        if not re.match(r"^\s*TA-[A-Z0-9-]+\s*,", line, re.IGNORECASE):
+            continue
+        columns = next(csv.reader([line], skipinitialspace=True), [])
+        if len(columns) < 9:
+            continue
+        sku, product, category, size, color, quantity, _cost, retail, batch = [c.strip() for c in columns[:9]]
+        try:
+            stock_qty = int(quantity.replace(",", ""))
+            unit_price = float(retail.replace(",", ""))
+        except ValueError:
+            continue
+        items.append({
+            "product_name": f"{product} - {size} - {color} ({sku})",
+            "action": "set_stock",
+            "quantity": stock_qty,
+            "unit_price": unit_price,
+        })
+    return items
 
 
 def chat_with_context(messages: List[Dict], shop_context: str, api_key: str, currency_symbol: str = "₦", business_context: str = "") -> str:
