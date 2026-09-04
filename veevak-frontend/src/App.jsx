@@ -439,8 +439,8 @@ const makeStyles = (C) => `
   .returning-amount { margin-left:auto; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:${C.greenText}; }
   .how-list { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
   .how-item { font-size:12px; color:${C.textSecondary}; display:flex; gap:8px; }
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:flex-end; justify-content:center; }
-  .modal { background:${C.surface}; border:1px solid ${C.border}; border-radius:16px 16px 0 0; padding:20px 16px 36px; width:100%; max-width:480px; display:flex; flex-direction:column; gap:14px; max-height:90vh; overflow-y:auto; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px 16px; }
+  .modal { background:${C.surface}; border:1px solid ${C.border}; border-radius:16px; padding:20px 16px; width:100%; max-width:480px; display:flex; flex-direction:column; gap:14px; max-height:calc(100vh - 40px); overflow-y:auto; }
   .modal-title { font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600; color:${C.textPrimary}; }
   .section-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
   .section-title { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:${C.textSecondary}; font-weight:500; }
@@ -486,7 +486,10 @@ const makeStyles = (C) => `
   .profile-actions { display:flex; gap:10px; padding-top:2px; }
   .profile-actions .btn-primary, .profile-actions .btn-secondary { margin-top:0 !important; }
   @media (max-width: 520px) { .profile-actions { flex-direction:column; } }
-  .assistant-launcher { position:fixed; right:24px; bottom:92px; width:54px; height:54px; border:0; border-radius:50%; background:${C.gold}; color:#001819; font-size:22px; cursor:pointer; z-index:80; box-shadow:0 8px 24px rgba(0,0,0,0.35); }
+  .assistant-launcher { position:fixed; right:24px; bottom:92px; width:58px; height:58px; border:0; border-radius:50%; background:${C.gold}; color:#001819; cursor:pointer; z-index:80; box-shadow:0 8px 24px rgba(0,0,0,0.35); animation:assistantBounce 2.8s ease-in-out infinite; }
+  .assistant-launcher:hover { animation-play-state:paused; transform:scale(1.06); }
+  .assistant-logo { width:32px; height:26px; display:block; margin:auto; }
+  @keyframes assistantBounce { 0%,70%,100%{transform:translateY(0)} 78%{transform:translateY(-8px)} 86%{transform:translateY(0)} 92%{transform:translateY(-4px)} }
   .assistant-panel { position:fixed; right:24px; bottom:158px; width:min(380px,calc(100vw - 32px)); height:min(540px,calc(100vh - 190px)); display:flex; flex-direction:column; background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; overflow:hidden; z-index:79; box-shadow:0 16px 48px rgba(0,0,0,0.55); }
   .assistant-head { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid ${C.border}; }
   .assistant-head-copy { flex:1; }
@@ -1726,7 +1729,12 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
         </div>
         <div className="assistant-hint">Enter adds a new line. Ctrl+Enter sends.</div>
       </div>}
-      <button className="assistant-launcher" aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onClick={()=>setOpen(value=>!value)}>{open ? "×" : "✦"}</button>
+      <button className="assistant-launcher" aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onClick={()=>setOpen(value=>!value)}>
+        {open ? "×" : <svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M8 8 H32 L50 33 L68 8 H92 V55 L78 70 H62 L50 53 L38 70 H22 L8 55 Z" fill="#001819"/>
+          <path d="M22 18 V48 L34 58 L43 40 Z M78 18 V48 L66 58 L57 40 Z M40 22 L50 36 L60 22 L50 48 Z" fill={C.gold}/>
+        </svg>}
+      </button>
     </>
   );
 }
