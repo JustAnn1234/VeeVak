@@ -5,19 +5,24 @@ from typing import Dict, List
 
 def _call_gemini(prompt: str, api_key: str, max_tokens: int = 1024, temperature: float = 0.1):
     """Shared helper for calling Gemini and returning the raw text response, or None on failure."""
-    response = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={api_key}",
-        json={
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens}
-        },
-        timeout=30
-    )
-    if response.status_code == 200:
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens}
+    }
+    for attempt in range(2):
         try:
-            return response.json()["candidates"][0]["content"]["parts"][0]["text"]
-        except (KeyError, IndexError):
-            return None
+            response = requests.post(url, json=payload, timeout=30)
+            if response.status_code == 200:
+                try:
+                    return response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                except (KeyError, IndexError):
+                    return None
+            if response.status_code not in (429, 500, 502, 503, 504) or attempt == 1:
+                return None
+        except requests.exceptions.RequestException:
+            if attempt == 1:
+                return None
     return None
 
 

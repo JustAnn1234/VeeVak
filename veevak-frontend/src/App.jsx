@@ -62,16 +62,16 @@ async function apiAuthGet(path, token) {
 // ── Design tokens ─────────────────────────────────────────────────────
 const THEMES = {
   dark: {
-    bg:"#0d0d0d", surface:"#161616", surface2:"#1e1e1e", border:"#363636",
-    gold:"#159a9c", goldLight:"#42c9c2", goldDim:"#155e63",
-    green:"#2e7d4f", greenText:"#4ade80", red:"#7d2e2e", redText:"#f87171",
-    textPrimary:"#fff8eb", textSecondary:"#b8b5ad", textMuted:"#85827b",
+    bg:"#0F111A", surface:"#1A1D2E", surface2:"#232740", border:"#353A58",
+    gold:"#6C5CE7", goldLight:"#8A7CFF", goldDim:"#403989",
+    green:"#087F78", greenText:"#00E676", red:"#8F3D50", redText:"#FF6B81",
+    textPrimary:"#F5F7FF", textSecondary:"#B5BAD2", textMuted:"#7C83A1",
   },
   light: {
     bg:"#f5f3ee", surface:"#ffffff", surface2:"#f0ede5", border:"#ddd8cc",
-    gold:"#087f82", goldLight:"#0b9da0", goldDim:"#b8e3df",
-    green:"#2e7d4f", greenText:"#1a9550", red:"#c4453a", redText:"#c4453a",
-    textPrimary:"#1a1814", textSecondary:"#5c5648", textMuted:"#8a8472",
+    gold:"#5748C9", goldLight:"#6C5CE7", goldDim:"#DCD8FF",
+    green:"#087F78", greenText:"#007A52", red:"#B33E55", redText:"#A92E48",
+    textPrimary:"#171A2A", textSecondary:"#4E5573", textMuted:"#707894",
   },
 };
 
@@ -1734,7 +1734,7 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
       setMessages(prev => [...prev, { role:"ai", text:result.reply || "Got it." }]);
       if (result.saved?.length) onChanged?.();
     } catch (e) {
-      setMessages(prev => [...prev, { role:"ai", text:"I could not reach the business service. Please try again." }]);
+      setMessages(prev => [...prev, { role:"ai", text:`Assistant error: ${e.message || "The business service is unavailable."}` }]);
     }
     setLoading(false);
   }
@@ -1743,7 +1743,7 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
     <>
       {open && <div className="assistant-panel">
         <div className="assistant-head">
-          <div className="settings-avatar" style={{width:36,height:36,fontSize:15}}>W</div>
+          <div className="settings-avatar" style={{width:36,height:36,padding:7}}><svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill={C.gold}/></svg></div>
           <div className="assistant-head-copy"><div className="assistant-title">VeeVak Assistant</div><div className="assistant-status">Sales, expenses, inventory and business answers</div></div>
           <button className="assistant-close" aria-label="Close assistant" onClick={()=>setOpen(false)}>×</button>
         </div>
