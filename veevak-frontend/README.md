@@ -1,16 +1,48 @@
-# React + Vite
+# VeeVak — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite single-page application for VeeVak. All UI lives in [`src/App.jsx`](src/App.jsx) — one file, no component library.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 18** (Vite)
+- **Plain CSS** — inline styles + a generated `<style>` block; dark and light themes
+- **No UI framework** — all components are hand-written
 
-## React Compiler
+## Pages / views
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| View | Description |
+|---|---|
+| **Home / Dashboard** | Today's revenue, expenses, and profit. Weekly trend chart. Top products. Recent sales feed. |
+| **Log Sale** | Three modes: AI chat, paste-a-conversation, or upload a WhatsApp `.txt` export. |
+| **Expenses** | Log and list business expenses. |
+| **Inventory** | Add and track stock levels and unit prices. Low-stock warning. |
+| **Customers** | All customers from sales history, with lifetime spend and order count. |
+| **Reports** | Monthly revenue, expenses, and profit summary. |
+| **Settings / Profile** | Language, currency, business name, theme, and profile photo. |
+| **Floating Assistant** | Draggable AI chat bubble — available on every page. Supports voice input. |
 
-## Expanding the ESLint configuration
+## Getting started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm run build      # outputs to dist/
+```
+
+## Connecting to the API
+
+The API base URL is set at the top of `src/App.jsx`:
+
+```js
+const API_BASE = "https://veevak-backend.onrender.com"
+```
+
+Change this to `http://localhost:8000` to develop against a local backend.
+
+## Multi-language & multi-currency
+
+Translation strings are defined in the `TRANSLATIONS` object inside `App.jsx`. Supported languages: English, Yoruba, Igbo, Hausa, Pidgin. Supported currencies: NGN (₦), USD ($), GBP (£).
+
+## Themes
+
+Two themes — `dark` and `light` — are defined in the `THEMES` object. The active theme is stored in `localStorage`.
