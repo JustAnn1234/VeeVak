@@ -1878,7 +1878,7 @@ function confirmLogout() {
       L43 40
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 
   <path
@@ -1889,7 +1889,7 @@ function confirmLogout() {
       L57 40
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 
   <path
@@ -1900,7 +1900,7 @@ function confirmLogout() {
       L50 48
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 </svg>
 </div>
