@@ -368,8 +368,8 @@ const makeStyles = (C) => `
   .msg.ai { background:${C.surface2}; color:${C.textPrimary}; align-self:flex-start; border-bottom-left-radius:3px; }
   .msg.user { background:${C.goldDim}; color:${C.textPrimary}; align-self:flex-end; border-bottom-right-radius:3px; }
   .msg-label { font-size:10px; color:${C.gold}; margin-bottom:4px; font-weight:600; letter-spacing:0.05em; }
-  .chat-input-row { display:flex; gap:8px; align-items:center; }
-  .chat-input { flex:1; background:${C.surface2}; border:1px solid ${C.border}; border-radius:10px; padding:10px 13px; font-size:13px; color:${C.textPrimary}; outline:none; font-family:'Inter',sans-serif; height:42px; transition:border-color 0.15s; }
+  .chat-input-row { display:flex; gap:8px; align-items:flex-end; }
+  .chat-input { flex:1; width:100%; background:${C.surface2}; border:1px solid ${C.border}; border-radius:10px; padding:11px 13px; font-size:13px; color:${C.textPrimary}; outline:none; font-family:'Inter',sans-serif; min-height:96px; max-height:220px; overflow-y:auto; resize:vertical; line-height:1.5; transition:border-color 0.15s; }
   .chat-input:focus { border-color:${C.gold}; }
   .chat-input::placeholder { color:${C.textMuted}; }
   .btn-send { width:42px; height:42px; background:linear-gradient(135deg,${C.gold},${C.goldDim}); border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:opacity 0.15s; flex-shrink:0; }
@@ -986,7 +986,12 @@ function LogSale({ t, currency, shopId, shopName, onSaleLogged }) {
             </div>
           )}
           <div className="chat-input-row">
-            <input className="chat-input" placeholder={t.chatPlaceholder} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSend()}/>
+            <textarea className="chat-input" rows={4} placeholder={t.chatPlaceholder} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}/>
             <button className="btn-send" onClick={handleSend} disabled={loading||!input.trim()}>➤</button>
           </div>
         </>
