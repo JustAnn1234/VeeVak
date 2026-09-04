@@ -21,7 +21,7 @@ from database.db import (
     init_db, create_seller, get_seller_by_email, create_shop, get_shops_for_seller,
     save_sale, get_sales_for_shop, save_expense, get_expenses_for_shop,
     upsert_inventory_item, get_inventory_for_shop, get_shop_analytics,
-    verify_password, create_session, get_seller_by_session
+    verify_password, create_session, get_seller_by_session, update_seller_profile
 )
 
 load_dotenv()
@@ -61,6 +61,10 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class ProfileUpdateRequest(BaseModel):
+    name: str
+    email: str
 
 class OnboardRequest(BaseModel):
     name: str
@@ -152,6 +156,7 @@ async def login(req: LoginRequest):
         "token": token,
         "seller_id": seller["id"],
         "name": seller["name"],
+        "email": seller["email"],
         "language": seller["language"],
         "currency": seller["currency"],
         "shops": shops
@@ -167,10 +172,27 @@ async def get_current_session(token: str):
     return {
         "seller_id": seller["id"],
         "name": seller["name"],
+        "email": seller["email"],
         "language": seller["language"],
         "currency": seller["currency"],
         "shops": shops
     }
+
+
+@app.put("/auth/profile")
+async def update_profile(req: ProfileUpdateRequest, token: str):
+    seller = get_seller_by_session(token)
+    if not seller:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+    email = req.email.strip()
+    name = req.name.strip()
+    if not name or not email:
+        raise HTTPException(status_code=400, detail="Name and email are required.")
+    existing = get_seller_by_email(email)
+    if existing and existing["id"] != seller["id"]:
+        raise HTTPException(status_code=400, detail="That email is already in use.")
+    update_seller_profile(seller["id"], name, email)
+    return {"name": name, "email": email}
 
 # ── Onboarding ───────────────────────────────────────────────────────
 

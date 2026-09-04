@@ -16,6 +16,19 @@ async function apiPost(path, body) {
   return res.json();
 }
 
+async function apiPut(path, body, token) {
+  const res = await fetch(`${API_BASE}${path}?token=${encodeURIComponent(token)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 async function apiGet(path) {
   const res = await fetch(`${API_BASE}${path}`);
   if (!res.ok) {
@@ -60,6 +73,12 @@ const THEMES = {
     green:"#2e7d4f", greenText:"#1a9550", red:"#c4453a", redText:"#c4453a",
     textPrimary:"#1a1814", textSecondary:"#5c5648", textMuted:"#8a8472",
   },
+};
+
+const ACCENTS = {
+  gold: { gold:"#c9920a", goldLight:"#f0b429", goldDim:"#7a5800" },
+  teal: { gold:"#159a9c", goldLight:"#42c9c2", goldDim:"#155e63" },
+  coral: { gold:"#d8664a", goldLight:"#f28b70", goldDim:"#713a32" },
 };
 
 let C = THEMES.dark;
@@ -414,6 +433,9 @@ const makeStyles = (C) => `
   .theme-btn { border:none; border-radius:7px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600; transition:all 0.15s; background:transparent; color:${C.textSecondary}; }
   .theme-btn.active { background:${C.gold}; color:#000; }
   .theme-btn:hover:not(.active) { background:${C.surface}; }
+  .accent-options { display:flex; gap:10px; margin-top:7px; }
+  .accent-btn { width:32px; height:32px; border-radius:50%; border:3px solid ${C.surface2}; cursor:pointer; box-shadow:0 0 0 1px ${C.border}; }
+  .accent-btn.active { box-shadow:0 0 0 2px ${C.gold}; }
   .tip-card { background:${C.surface2}; border:1px solid ${C.border}; border-radius:10px; padding:14px; display:flex; gap:10px; }
   .tip-label { font-size:10px; letter-spacing:0.08em; color:${C.gold}; text-transform:uppercase; font-weight:600; margin-bottom:4px; }
   .tip-text { font-size:12px; color:${C.textSecondary}; line-height:1.6; }
@@ -544,6 +566,7 @@ function Onboarding({ onComplete }) {
         currency: result.currency || "NGN",
         bizName: shops[0].name,
         ownerName: result.name,
+        email: result.email || email.trim(),
         sellerId: result.seller_id,
         shopId: shops[0].id,
         shopName: shops[0].name,
@@ -578,6 +601,7 @@ function Onboarding({ onComplete }) {
         lang, currency,
         bizName: bizName.trim(),
         ownerName: ownerName.trim(),
+        email: email.trim(),
         sellerId: result.seller_id,
         shopId: result.shop_id,
         shopName: result.shop_name,
@@ -1471,9 +1495,10 @@ function Reports({ t, currency, shopId, refreshKey }) {
   );
 }
 
-function Profile({ ownerName, email, onBack, onSave }) {
+function Profile({ ownerName, email, token, onBack, onSave }) {
   const [pic, setPic] = useState(() => localStorage.getItem("veevak_profile_pic") || "");
   const [name, setName] = useState(ownerName || "");
+  const [accountEmail, setAccountEmail] = useState(email || "");
   const [phone, setPhone] = useState(() => localStorage.getItem("veevak_profile_phone") || "");
   const [location, setLocation] = useState(() => localStorage.getItem("veevak_profile_location") || "");
   const [bio, setBio] = useState(() => localStorage.getItem("veevak_profile_bio") || "");
@@ -1487,15 +1512,23 @@ function Profile({ ownerName, email, onBack, onSave }) {
     reader.onload = () => {
       localStorage.setItem("veevak_profile_pic", reader.result);
       setPic(reader.result);
+      onSave?.(name, accountEmail, reader.result);
     };
     reader.readAsDataURL(file);
   }
 
-  function handleSave() {
+  async function handleSave() {
+    if (!name.trim() || !accountEmail.trim()) return;
+    try {
+      const updated = await apiPut("/auth/profile", { name: name.trim(), email: accountEmail.trim() }, token);
+      onSave?.(updated.name, updated.email, pic);
+    } catch (e) {
+      alert(e.message || "Could not save profile.");
+      return;
+    }
     localStorage.setItem("veevak_profile_phone", phone);
     localStorage.setItem("veevak_profile_location", location);
     localStorage.setItem("veevak_profile_bio", bio);
-    onSave?.(name);
     setSaved(true);
     setTimeout(()=>setSaved(false), 2000);
   }
@@ -1526,7 +1559,7 @@ function Profile({ ownerName, email, onBack, onSave }) {
           </div>
           <div className="form-field">
             <label className="form-label">Email</label>
-            <input className="form-input" value={email||""} disabled style={{opacity:0.6}}/>
+            <input className="form-input" type="email" value={accountEmail} onChange={e=>setAccountEmail(e.target.value)} placeholder="you@example.com"/>
           </div>
           <div className="form-row">
             <div className="form-field">
@@ -1552,7 +1585,7 @@ function Profile({ ownerName, email, onBack, onSave }) {
   );
 }
 
-function Settings({ t, lang, currency, bizName, theme, onThemeChange, onSave, onOpenProfile }) {
+function Settings({ t, lang, currency, bizName, theme, accent, onThemeChange, onAccentChange, profilePic, onSave, onOpenProfile }) {
   const [selLang, setSelLang] = useState(lang);
   const [selCurrency, setSelCurrency] = useState(currency);
   const [name, setName] = useState(bizName);
@@ -1565,7 +1598,7 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, onSave, on
       <div className="settings-panel">
         <div className="settings-panel-head"><div className="settings-panel-title">Account</div><div className="settings-panel-copy">Your personal account and business identity.</div></div>
         <div className="settings-profile-link" onClick={onOpenProfile}>
-          <div className="settings-avatar">{bizName?.[0] || "V"}</div>
+          <div className="settings-avatar">{profilePic ? <img src={profilePic} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (bizName?.[0] || "V")}</div>
           <div className="settings-profile-copy"><div className="settings-profile-name">My Profile</div><div className="settings-profile-meta">Update your name, photo, contact details and bio</div></div>
           <div className="settings-chevron">›</div>
         </div>
@@ -1585,6 +1618,14 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, onSave, on
           <button className={`theme-btn ${theme==="dark"?"active":""}`} onClick={()=>onThemeChange("dark")}>🌙 Dark</button>
           <button className={`theme-btn ${theme==="light"?"active":""}`} onClick={()=>onThemeChange("light")}>☀️ Light</button>
         </div>
+          </div>
+          <div className="form-field">
+            <label className="form-label">Accent color</label>
+            <div className="accent-options">
+              {Object.entries(ACCENTS).map(([key, colors]) => (
+                <button key={key} aria-label={`${key} accent`} className={`accent-btn ${accent===key?"active":""}`} style={{background:colors.gold}} onClick={()=>onAccentChange(key)}/>
+              ))}
+            </div>
           </div>
           <div className="form-field">
         <label className="form-label">{t.language}</label>
@@ -1643,8 +1684,10 @@ export default function App() {
   const [newShopName, setNewShopName] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [theme, setTheme] = useState(() => localStorage.getItem("veevak_theme") || "dark");
+  const [accent, setAccent] = useState(() => localStorage.getItem("veevak_accent") || "gold");
+  const [profilePic, setProfilePic] = useState(() => localStorage.getItem("veevak_profile_pic") || "");
 
-  C = THEMES[theme] || THEMES.dark;
+  C = { ...(THEMES[theme] || THEMES.dark), ...(ACCENTS[accent] || ACCENTS.gold) };
   const styles = makeStyles(C);
   const t = TRANSLATIONS[config.lang] || TRANSLATIONS.en;
   const activeShop = shops.find(s => s.id === activeShopId);
@@ -1664,7 +1707,7 @@ export default function App() {
           setCheckingSession(false);
           return;
         }
-        setConfig({ lang: d.language, currency: d.currency, bizName: fetchedShops[0].name, ownerName: d.name || "" });
+        setConfig({ lang: d.language, currency: d.currency, bizName: fetchedShops[0].name, ownerName: d.name || "", email: d.email || "" });
         setSellerId(d.seller_id);
         setShops(fetchedShops);
         setActiveShopId(fetchedShops[0].id);
@@ -1719,6 +1762,10 @@ function confirmLogout() {
   function handleThemeChange(next) {
     setTheme(next);
     localStorage.setItem("veevak_theme", next);
+  }
+  function handleAccentChange(next) {
+    setAccent(next);
+    localStorage.setItem("veevak_accent", next);
   }
   function handleSaveSettings(cfg) {
     setConfig(prev => ({ ...prev, lang: cfg.lang, currency: cfg.currency, bizName: cfg.bizName }));
@@ -1809,8 +1856,8 @@ function confirmLogout() {
     inventory: <Inventory t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey} onChanged={triggerRefresh}/>,
     customers: <Customers t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
     reports:   <Reports t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
-    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")}/>,
-    profile:   <Profile ownerName={config.ownerName} email={config.email||""} onBack={()=>setTab("settings")} onSave={(newName)=>setConfig(prev=>({...prev, ownerName:newName}))}/>,
+    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} accent={accent} onThemeChange={handleThemeChange} onAccentChange={handleAccentChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")}/>,
+    profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("settings")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
   };
 
   return (

@@ -197,6 +197,14 @@ def get_seller_by_email(email: str):
     return dict(row) if row else None
 
 
+def update_seller_profile(seller_id: int, name: str, email: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(fix_sql("UPDATE sellers SET name = ?, email = ? WHERE id = ?"), (name, email, seller_id))
+    conn.commit()
+    conn.close()
+
+
 def create_shop(seller_id: int, name: str) -> int:
     conn = get_connection()
     cursor = conn.cursor()
