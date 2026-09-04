@@ -63,22 +63,16 @@ async function apiAuthGet(path, token) {
 const THEMES = {
   dark: {
     bg:"#0d0d0d", surface:"#161616", surface2:"#1e1e1e", border:"#363636",
-    gold:"#c9920a", goldLight:"#e8a80c", goldDim:"#7a5800",
+    gold:"#159a9c", goldLight:"#42c9c2", goldDim:"#155e63",
     green:"#2e7d4f", greenText:"#4ade80", red:"#7d2e2e", redText:"#f87171",
     textPrimary:"#fff8eb", textSecondary:"#b8b5ad", textMuted:"#85827b",
   },
   light: {
     bg:"#f5f3ee", surface:"#ffffff", surface2:"#f0ede5", border:"#ddd8cc",
-    gold:"#b9810a", goldLight:"#d4940c", goldDim:"#e8d9b5",
+    gold:"#087f82", goldLight:"#0b9da0", goldDim:"#b8e3df",
     green:"#2e7d4f", greenText:"#1a9550", red:"#c4453a", redText:"#c4453a",
     textPrimary:"#1a1814", textSecondary:"#5c5648", textMuted:"#8a8472",
   },
-};
-
-const ACCENTS = {
-  gold: { gold:"#c9920a", goldLight:"#f0b429", goldDim:"#7a5800" },
-  teal: { gold:"#159a9c", goldLight:"#42c9c2", goldDim:"#155e63" },
-  coral: { gold:"#d8664a", goldLight:"#f28b70", goldDim:"#713a32" },
 };
 
 let C = THEMES.dark;
@@ -433,9 +427,6 @@ const makeStyles = (C) => `
   .theme-btn { border:none; border-radius:7px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600; transition:all 0.15s; background:transparent; color:${C.textSecondary}; }
   .theme-btn.active { background:${C.gold}; color:#000; }
   .theme-btn:hover:not(.active) { background:${C.surface}; }
-  .accent-options { display:flex; gap:10px; margin-top:7px; }
-  .accent-btn { width:32px; height:32px; border-radius:50%; border:3px solid ${C.surface2}; cursor:pointer; box-shadow:0 0 0 1px ${C.border}; }
-  .accent-btn.active { box-shadow:0 0 0 2px ${C.gold}; }
   .tip-card { background:${C.surface2}; border:1px solid ${C.border}; border-radius:10px; padding:14px; display:flex; gap:10px; }
   .tip-label { font-size:10px; letter-spacing:0.08em; color:${C.gold}; text-transform:uppercase; font-weight:600; margin-bottom:4px; }
   .tip-text { font-size:12px; color:${C.textSecondary}; line-height:1.6; }
@@ -648,7 +639,7 @@ function Onboarding({ onComplete }) {
       L43 40
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 
   <path
@@ -659,7 +650,7 @@ function Onboarding({ onComplete }) {
       L57 40
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 
   <path
@@ -670,7 +661,7 @@ function Onboarding({ onComplete }) {
       L50 48
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 </svg>
 </div>
@@ -1585,7 +1576,7 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
   );
 }
 
-function Settings({ t, lang, currency, bizName, theme, accent, onThemeChange, onAccentChange, profilePic, onSave, onOpenProfile }) {
+function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic, onSave, onOpenProfile }) {
   const [selLang, setSelLang] = useState(lang);
   const [selCurrency, setSelCurrency] = useState(currency);
   const [name, setName] = useState(bizName);
@@ -1618,14 +1609,6 @@ function Settings({ t, lang, currency, bizName, theme, accent, onThemeChange, on
           <button className={`theme-btn ${theme==="dark"?"active":""}`} onClick={()=>onThemeChange("dark")}>🌙 Dark</button>
           <button className={`theme-btn ${theme==="light"?"active":""}`} onClick={()=>onThemeChange("light")}>☀️ Light</button>
         </div>
-          </div>
-          <div className="form-field">
-            <label className="form-label">Accent color</label>
-            <div className="accent-options">
-              {Object.entries(ACCENTS).map(([key, colors]) => (
-                <button key={key} aria-label={`${key} accent`} className={`accent-btn ${accent===key?"active":""}`} style={{background:colors.gold}} onClick={()=>onAccentChange(key)}/>
-              ))}
-            </div>
           </div>
           <div className="form-field">
         <label className="form-label">{t.language}</label>
@@ -1684,10 +1667,9 @@ export default function App() {
   const [newShopName, setNewShopName] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [theme, setTheme] = useState(() => localStorage.getItem("veevak_theme") || "dark");
-  const [accent, setAccent] = useState(() => localStorage.getItem("veevak_accent") || "gold");
   const [profilePic, setProfilePic] = useState(() => localStorage.getItem("veevak_profile_pic") || "");
 
-  C = { ...(THEMES[theme] || THEMES.dark), ...(ACCENTS[accent] || ACCENTS.gold) };
+  C = THEMES[theme] || THEMES.dark;
   const styles = makeStyles(C);
   const t = TRANSLATIONS[config.lang] || TRANSLATIONS.en;
   const activeShop = shops.find(s => s.id === activeShopId);
@@ -1763,10 +1745,6 @@ function confirmLogout() {
     setTheme(next);
     localStorage.setItem("veevak_theme", next);
   }
-  function handleAccentChange(next) {
-    setAccent(next);
-    localStorage.setItem("veevak_accent", next);
-  }
   function handleSaveSettings(cfg) {
     setConfig(prev => ({ ...prev, lang: cfg.lang, currency: cfg.currency, bizName: cfg.bizName }));
     setShops(prev => prev.map(s => s.id === activeShopId ? { ...s, name: cfg.bizName } : s));
@@ -1811,7 +1789,7 @@ function confirmLogout() {
       L43 40
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 
   <path
@@ -1822,7 +1800,7 @@ function confirmLogout() {
       L57 40
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 
   <path
@@ -1833,7 +1811,7 @@ function confirmLogout() {
       L50 48
       Z
     "
-    fill="#D4AF37"
+    fill={C.gold}
   />
 </svg>
 </div>
@@ -1856,7 +1834,7 @@ function confirmLogout() {
     inventory: <Inventory t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey} onChanged={triggerRefresh}/>,
     customers: <Customers t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
     reports:   <Reports t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
-    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} accent={accent} onThemeChange={handleThemeChange} onAccentChange={handleAccentChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")}/>,
+    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")}/>,
     profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("settings")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
   };
 
