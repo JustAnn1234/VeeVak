@@ -444,6 +444,35 @@ const makeStyles = (C) => `
   .settings-row:last-child { border-bottom:none; }
   .settings-label { font-size:13px; color:${C.textPrimary}; }
   .settings-value { font-size:12px; color:${C.textSecondary}; display:flex; align-items:center; gap:6px; }
+  .settings-page { display:flex; flex-direction:column; gap:16px; }
+  .settings-heading { padding:4px 2px 2px; }
+  .settings-heading h1 { font-family:'Space Grotesk',sans-serif; font-size:24px; line-height:1.15; color:${C.textPrimary}; }
+  .settings-heading p { color:${C.textSecondary}; font-size:13px; margin-top:5px; }
+  .settings-panel { background:${C.surface}; border:1px solid ${C.border}; border-radius:12px; overflow:hidden; }
+  .settings-panel-head { padding:16px 18px 12px; border-bottom:1px solid ${C.border}; }
+  .settings-panel-title { color:${C.textPrimary}; font-size:14px; font-weight:600; }
+  .settings-panel-copy { color:${C.textSecondary}; font-size:12px; margin-top:3px; }
+  .settings-panel-body { padding:16px 18px 18px; display:flex; flex-direction:column; gap:16px; }
+  .settings-profile-link { display:flex; align-items:center; gap:12px; padding:16px 18px; cursor:pointer; transition:background 0.15s; }
+  .settings-profile-link:hover { background:${C.surface2}; }
+  .settings-avatar { width:42px; height:42px; border-radius:50%; background:${C.goldDim}; color:${C.goldLight}; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:600; overflow:hidden; flex-shrink:0; }
+  .settings-profile-copy { flex:1; min-width:0; }
+  .settings-profile-name { color:${C.textPrimary}; font-size:13px; font-weight:600; }
+  .settings-profile-meta { color:${C.textSecondary}; font-size:11px; margin-top:2px; }
+  .settings-chevron { color:${C.gold}; font-size:18px; }
+  .profile-page { display:flex; flex-direction:column; gap:16px; }
+  .profile-summary { display:flex; align-items:center; gap:14px; padding:20px; background:${C.surface}; border:1px solid ${C.border}; border-radius:12px; }
+  .profile-avatar { width:68px; height:68px; border-radius:50%; background:${C.surface2}; border:2px solid ${C.gold}; display:flex; align-items:center; justify-content:center; overflow:hidden; color:${C.gold}; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:600; flex-shrink:0; }
+  .profile-summary h1 { font-family:'Space Grotesk',sans-serif; font-size:20px; color:${C.textPrimary}; }
+  .profile-summary p { color:${C.textSecondary}; font-size:12px; margin-top:3px; }
+  .profile-photo-btn { color:${C.gold}; background:transparent; border:0; padding:0; font-size:12px; font-weight:600; cursor:pointer; margin-top:8px; }
+  .profile-form { background:${C.surface}; border:1px solid ${C.border}; border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:16px; }
+  .profile-form-head { padding-bottom:14px; border-bottom:1px solid ${C.border}; }
+  .profile-form-head h2 { font-size:14px; color:${C.textPrimary}; font-weight:600; }
+  .profile-form-head p { color:${C.textSecondary}; font-size:12px; margin-top:3px; }
+  .profile-actions { display:flex; gap:10px; padding-top:2px; }
+  .profile-actions .btn-primary, .profile-actions .btn-secondary { margin-top:0 !important; }
+  @media (max-width: 520px) { .profile-actions { flex-direction:column; } }
 `;
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -1472,20 +1501,25 @@ function Profile({ ownerName, email, onBack, onSave }) {
   }
 
   return (
-    <div className="card" style={{padding:0,overflow:"hidden"}}>
-      <div style={{padding:"0 20px 20px",marginTop:40,display:"flex",flexDirection:"column",alignItems:"center"}}>
-        <div onClick={()=>fileRef.current?.click()} style={{width:88,height:88,borderRadius:"50%",background:C.surface2,border:`4px solid ${C.surface}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden",fontSize:30,color:C.gold,boxShadow:"0 2px 8px rgba(0,0,0,0.15)"}}>
+    <div className="profile-page">
+      <div className="settings-heading">
+        <h1>My Profile</h1>
+        <p>Manage the personal details connected to your VeeVak account.</p>
+      </div>
+      <div className="profile-summary">
+        <div className="profile-avatar" onClick={()=>fileRef.current?.click()}>
           {pic ? <img src={pic} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (name?.[0] || "?")}
         </div>
-        <span style={{fontSize:12,color:C.gold,cursor:"pointer",marginTop:8,fontWeight:600}} onClick={()=>fileRef.current?.click()}>Change photo</span>
+        <div>
+          <h1>{name || "Your Name"}</h1>
+          <p>{email || "Add your account email"}</p>
+          <button className="profile-photo-btn" onClick={()=>fileRef.current?.click()}>Change photo</button>
+        </div>
         <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePicChange}/>
-
-        <div style={{fontSize:18,fontWeight:700,fontFamily:"Space Grotesk",color:C.textPrimary,marginTop:14}}>{name || "Your Name"}</div>
-        {location && <div style={{fontSize:12,color:C.textSecondary,marginTop:2}}>📍 {location}</div>}
-
-        <div style={{width:"100%",height:1,background:C.border,margin:"20px 0"}}/>
-
-        <div style={{width:"100%",display:"flex",flexDirection:"column",gap:12}}>
+      </div>
+      <div className="profile-form">
+        <div className="profile-form-head"><h2>Personal information</h2><p>Keep your profile details up to date.</p></div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
           <div className="form-field">
             <label className="form-label">Full Name</label>
             <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"/>
@@ -1509,11 +1543,10 @@ function Profile({ ownerName, email, onBack, onSave }) {
             <textarea className="form-input" value={bio} onChange={e=>setBio(e.target.value)} placeholder="A short note about you or your business" rows={3} style={{resize:"vertical"}}/>
           </div>
         </div>
-
-        <button className="btn-primary" style={{marginTop:16}} onClick={handleSave}>
-          {saved ? "✓ Saved!" : "Save Changes"}
-        </button>
-        <button className="btn-secondary" style={{marginTop:8}} onClick={onBack}>← Back to Settings</button>
+        <div className="profile-actions">
+          <button className="btn-primary" onClick={handleSave}>{saved ? "✓ Saved!" : "Save Changes"}</button>
+          <button className="btn-secondary" onClick={onBack}>← Back to Settings</button>
+        </div>
       </div>
     </div>
   );
@@ -1524,24 +1557,36 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, onSave, on
   const [selCurrency, setSelCurrency] = useState(currency);
   const [name, setName] = useState(bizName);
   return (
-    <div className="card">
-      <div className="modal-title" style={{marginBottom:16}}>{t.settings}</div>
-      <div className="settings-row" onClick={onOpenProfile}>
-  <span className="settings-label">👤 My Profile</span>
-  <span className="settings-value">View →</span>
-</div>
-      <div className="form-field">
+    <div className="settings-page">
+      <div className="settings-heading">
+        <h1>{t.settings}</h1>
+        <p>Control how VeeVak looks and how your business is represented.</p>
+      </div>
+      <div className="settings-panel">
+        <div className="settings-panel-head"><div className="settings-panel-title">Account</div><div className="settings-panel-copy">Your personal account and business identity.</div></div>
+        <div className="settings-profile-link" onClick={onOpenProfile}>
+          <div className="settings-avatar">{bizName?.[0] || "V"}</div>
+          <div className="settings-profile-copy"><div className="settings-profile-name">My Profile</div><div className="settings-profile-meta">Update your name, photo, contact details and bio</div></div>
+          <div className="settings-chevron">›</div>
+        </div>
+        <div className="settings-panel-body">
+          <div className="form-field">
         <label className="form-label">{t.businessName}</label>
         <input className="form-input" value={name} onChange={e=>setName(e.target.value)}/>
+          </div>
+        </div>
       </div>
-      <div className="form-field" style={{marginTop:8}}>
+      <div className="settings-panel">
+        <div className="settings-panel-head"><div className="settings-panel-title">Preferences</div><div className="settings-panel-copy">Choose your appearance, language and currency.</div></div>
+        <div className="settings-panel-body">
+          <div className="form-field">
         <label className="form-label">Appearance</label>
         <div className="theme-toggle" style={{width:"fit-content",marginTop:4}}>
           <button className={`theme-btn ${theme==="dark"?"active":""}`} onClick={()=>onThemeChange("dark")}>🌙 Dark</button>
           <button className={`theme-btn ${theme==="light"?"active":""}`} onClick={()=>onThemeChange("light")}>☀️ Light</button>
         </div>
-      </div>
-      <div className="form-field" style={{marginTop:8}}>
+          </div>
+          <div className="form-field">
         <label className="form-label">{t.language}</label>
         <div className="lang-grid" style={{marginTop:4}}>
           {LANGUAGES.map(l=>(
@@ -1550,8 +1595,8 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, onSave, on
             </div>
           ))}
         </div>
-      </div>
-      <div className="form-field" style={{marginTop:8}}>
+          </div>
+          <div className="form-field">
         <label className="form-label">{t.currency}</label>
         <div className="currency-grid" style={{marginTop:4}}>
           {Object.entries(CURRENCIES).map(([code,info])=>(
@@ -1562,10 +1607,12 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, onSave, on
             </div>
           ))}
         </div>
-      </div>
-      <button className="btn-primary" style={{marginTop:8}} onClick={()=>onSave({lang:selLang,currency:selCurrency,bizName:name})}>
+          </div>
+          <button className="btn-primary" onClick={()=>onSave({lang:selLang,currency:selCurrency,bizName:name})}>
         {t.saveSettings}
-      </button>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
