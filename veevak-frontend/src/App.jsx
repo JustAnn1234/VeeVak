@@ -265,12 +265,56 @@ const makeStyles = (C) => `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background:${C.bg}; color:${C.textPrimary}; font-family:'Inter',sans-serif; font-size:14px; line-height:1.5; min-height:100vh; -webkit-font-smoothing:antialiased; }
 
+  /* ── DESKTOP SIDEBAR LAYOUT ── */
   .app { width:100%; min-height:100vh; display:flex; flex-direction:column; background:${C.bg}; }
+
   @media (min-width: 900px) {
-    .page-content { padding:28px 64px 90px; align-items:center; }
-    .page-content > * { width:100%; max-width:860px; margin-left:auto; margin-right:auto; }
-    .topbar { padding:18px 64px 14px; }
+    .app { flex-direction:row; }
+    .app-sidebar { display:flex !important; }
+    .bottom-nav { display:none !important; }
+    .topbar { padding:20px 32px 16px; border-bottom:1px solid ${C.border}; }
+    .page-content { padding:24px 32px 40px; }
+    .page-content > * { width:100%; }
+    .app-body { flex:1; display:flex; flex-direction:column; min-width:0; }
+    /* 2-column grid for stat cards on desktop */
+    .home-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .home-grid-full { grid-column:1/-1; }
   }
+
+  /* Sidebar */
+  .app-sidebar {
+    display:none;
+    width:64px;
+    min-height:100vh;
+    background:#0e0e1a;
+    border-right:1px solid ${C.border};
+    flex-direction:column;
+    align-items:center;
+    padding:16px 0;
+    gap:4px;
+    flex-shrink:0;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow:hidden;
+    z-index:60;
+  }
+  .sidebar-logo {
+    width:36px; height:36px; border-radius:10px;
+    background:linear-gradient(135deg,${C.gold},${C.goldDim});
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:16px; flex-shrink:0;
+  }
+  .sidebar-item {
+    width:44px; height:44px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; border:none; background:transparent;
+    color:${C.textMuted}; font-size:18px; transition:all 0.15s;
+    flex-shrink:0;
+  }
+  .sidebar-item:hover { background:${C.surface2}; color:${C.textSecondary}; }
+  .sidebar-item.active { background:${C.surface2}; color:${C.gold}; }
+  .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:4px; }
 
   /* ONBOARDING */
   .onboard { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:0; background:${C.bg}; }
@@ -910,14 +954,30 @@ function Home({ t, currency, shopId, refreshKey, ownerName }) {
     info:     { bg: C.surface2, border: C.border, icon:"💡", text: C.textSecondary },
   };
 
+  // Channel breakdown from recent sales
+  const channelCounts = {};
+  recentSales.forEach(s => { channelCounts[s.channel] = (channelCounts[s.channel]||0) + 1; });
+  const totalCh = Object.values(channelCounts).reduce((a,b)=>a+b,0);
+  const channelColors = { whatsapp:C.gold, instagram:C.accentLight||"#a78bfa", offline:C.textSecondary, facebook:"#818cf8", tiktok:"#e879f9" };
+  const channelList = Object.entries(channelCounts)
+    .map(([name,count]) => ({ name, pct: totalCh ? Math.round((count/totalCh)*100) : 0, color: channelColors[name]||C.textMuted }))
+    .sort((a,b)=>b.pct-a.pct);
+
   return (
     <>
-      <div style={{marginBottom:4}}>
-        <div style={{fontSize:18,fontWeight:600,fontFamily:"Space Grotesk",color:C.textPrimary}}>{greeting()}, {(ownerName||"there").split(" ")[0]} 👋</div>
-        <div style={{fontSize:12,color:C.textSecondary,marginTop:2}}>Here's how your business is doing today</div>
+      {/* Greeting row — full width */}
+      <div className="home-grid-full" style={{marginBottom:4}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif",color:C.textPrimary}}>{greeting()}, {(ownerName||"there").split(" ")[0]} 👋</div>
+            <div style={{fontSize:12,color:C.textSecondary,marginTop:2}}>Here's how your business is doing today</div>
+          </div>
+        </div>
       </div>
+
+      {/* Anomaly alerts — full width */}
       {anomalies?.alerts?.length > 0 && (
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div className="home-grid-full" style={{display:"flex",flexDirection:"column",gap:8}}>
           {anomalies.alerts.map((alert, i) => {
             const s = ALERT_COLORS[alert.severity] || ALERT_COLORS.info;
             return (
@@ -933,52 +993,79 @@ function Home({ t, currency, shopId, refreshKey, ownerName }) {
           })}
         </div>
       )}
-      <div className="card" style={{background:`linear-gradient(135deg,${C.surface},${C.surface2})`,border:`1px solid ${C.border}`}}>
-        <div className="card-label">{t.todayRevenue}</div>
-        <div className="card-value">{fmt(total,currency)}</div>
-      </div>
-      <div className="card" style={{background:`linear-gradient(135deg,${C.surface},${C.surface2})`,border:`1px solid ${C.border}`}}>
-        <div className="card-label">{t.todayProfit}</div>
-        <div className="card-value green">{fmt(profit,currency)}</div>
-        <div className="card-sub">
-          <span>Revenue: <b style={{color:C.greenText}}>{fmt(total,currency)}</b></span>
-          <span>— Expenses: <b style={{color:C.redText}}>{fmt(expenses,currency)}</b></span>
+
+      {/* 2-col stat cards */}
+      <div className="home-grid">
+        <div className="card" style={{border:`1px solid ${C.border}`}}>
+          <div className="card-label">{t.todayRevenue}</div>
+          <div className="card-value">{fmt(total,currency)}</div>
         </div>
-      </div>
-      <div className="card">
-        <div className="card-label">{t.weeklyRevenue}</div>
-        {weekly.length === 0 ? (
-          <div style={{fontSize:12,color:C.textMuted,marginTop:8}}>No sales yet this week.</div>
-        ) : (
-          <div className="chart-bars">
-            {weekly.map((w,i) => (
-              <div className="chart-col" key={i}>
-                <div className="chart-bar today" style={{height:`${Math.max(4,(w.total/maxWeekly)*100)}%`}}/>
-                <div className="chart-day">{new Date(w.date).toLocaleDateString(undefined,{weekday:"short"})}</div>
+        <div className="card" style={{border:`1px solid ${C.border}`}}>
+          <div className="card-label">{t.todayProfit}</div>
+          <div className="card-value green">{fmt(profit,currency)}</div>
+          {expenses > 0 && <div className="card-sub" style={{marginTop:6,fontSize:11}}>After {fmt(expenses,currency)} expenses</div>}
+        </div>
+
+        {/* Weekly revenue sparkline */}
+        <div className="card">
+          <div className="card-label" style={{marginBottom:8}}>{t.weeklyRevenue}</div>
+          {weekly.length === 0 ? (
+            <div style={{fontSize:12,color:C.textMuted,marginTop:8}}>No sales yet this week.</div>
+          ) : (
+            <>
+              <LineChart data={weekly.map(w=>w.total)}/>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+                <span style={{fontSize:9,color:C.textMuted}}>{weekly.length > 0 ? new Date(weekly[0].date).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}) : ""}</span>
+                <span style={{fontSize:9,color:C.textMuted}}>Today</span>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="card">
-        <div className="section-row">
-          <div className="section-title">{t.recentSales}</div>
+            </>
+          )}
         </div>
-        {recentSales.length === 0 ? (
-          <div className="empty-state"><div className="empty-icon">📭</div><div className="empty-text">No sales logged yet. Go to Log Sale to add your first one.</div></div>
-        ) : recentSales.map(s => (
-          <div className="sale-item" key={s.id}>
-            <div className="sale-info">
-              <div className="sale-name">{s.customer_name || "Customer"}</div>
-              <div className="sale-meta">{(s.products||[]).map(p=>p.name).join(", ")}</div>
-              <ChannelBadge ch={s.channel}/>
+
+        {/* Sales channels */}
+        <div className="card">
+          <div className="card-label" style={{marginBottom:10}}>Sales Channels</div>
+          {channelList.length === 0 ? (
+            <div style={{fontSize:12,color:C.textMuted}}>No sales yet.</div>
+          ) : channelList.map(ch => (
+            <div key={ch.name} style={{marginBottom:8}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{fontSize:11,color:C.textSecondary,textTransform:"capitalize"}}>{ch.name}</span>
+                <span style={{fontSize:11,color:ch.color,fontWeight:600}}>{ch.pct}%</span>
+              </div>
+              <div style={{height:4,background:C.surface2,borderRadius:2,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${ch.pct}%`,background:ch.color,borderRadius:2}}/>
+              </div>
             </div>
-            <div style={{textAlign:"right"}}>
-              <div className="sale-amount">{fmt(s.order_total||0,currency)}</div>
-              <div style={{fontSize:10,color:s.payment_status==="paid"?C.greenText:C.textMuted,marginTop:2}}>{s.payment_status}</div>
-            </div>
+          ))}
+        </div>
+
+        {/* Recent sales — full width */}
+        <div className="card home-grid-full">
+          <div className="section-row">
+            <div className="section-title">{t.recentSales}</div>
           </div>
-        ))}
+          {recentSales.length === 0 ? (
+            <div className="empty-state"><div className="empty-icon">📭</div><div className="empty-text">No sales logged yet. Go to Log Sale to add your first one.</div></div>
+          ) : recentSales.map(s => (
+            <div className="sale-item" key={s.id}>
+              <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                <div style={{width:32,height:32,borderRadius:"50%",background:C.surface2,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:C.gold,flexShrink:0}}>
+                  {(s.customer_name||"C")[0].toUpperCase()}
+                </div>
+                <div className="sale-info">
+                  <div className="sale-name">{s.customer_name || "Customer"}</div>
+                  <div className="sale-meta">{(s.products||[]).map(p=>p.name).join(", ")}</div>
+                  <ChannelBadge ch={s.channel}/>
+                </div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div className="sale-amount">{fmt(s.order_total||0,currency)}</div>
+                <div style={{fontSize:10,color:s.payment_status==="paid"?C.greenText:C.textMuted,marginTop:2}}>{s.payment_status}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </>
   );
@@ -1458,14 +1545,21 @@ function Inventory({ t, currency, shopId, refreshKey, onChanged }) {
 }
 
 function Customers({ t, currency, shopId, refreshKey }) {
-  const [sales, setSales] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [sales, setSales]       = useState([]);
+  const [segments, setSegments] = useState(null);
+  const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
     if (!shopId) return;
     setLoading(true);
-    apiGet(`/sales/${shopId}`)
-      .then(d => setSales(d.sales || []))
+    Promise.all([
+      apiGet(`/sales/${shopId}`),
+      apiGet(`/segments/${shopId}`).catch(() => null),
+    ])
+      .then(([salesResult, segmentResult]) => {
+        setSales(salesResult.sales || []);
+        setSegments(segmentResult);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [shopId, refreshKey]);
@@ -1496,6 +1590,62 @@ function Customers({ t, currency, shopId, refreshKey }) {
 
   return (
     <>
+      {/* ── AI Segment Insights ── */}
+      {segments?.enough_data && segments.insights?.length > 0 && (
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {segments.insights.map((insight, i) => (
+            <div key={i} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",fontSize:12,color:C.textSecondary,borderLeft:`3px solid ${C.gold}`}}>
+              💡 {insight}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Customer Segments ── */}
+      {segments?.enough_data && (
+        <div className="card">
+          <div className="section-row" style={{marginBottom:12}}>
+            <div className="section-title">Customer Segments ({segments.total_customers})</div>
+          </div>
+          {/* Segment summary pills */}
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+            {Object.entries(segments.segment_counts || {}).map(([seg, count]) => {
+              const segData = segments.segments?.find(s => s.segment === seg);
+              return (
+                <div key={seg} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:20,padding:"4px 12px",fontSize:11,color:segData?.color||C.textSecondary,fontWeight:600}}>
+                  {segData?.emoji} {seg} ({count})
+                </div>
+              );
+            })}
+          </div>
+          {/* Per-customer rows */}
+          {segments.segments?.map((s, i) => (
+            <div key={i} style={{padding:"12px 0",borderBottom:`1px solid ${C.border}`}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+                <div style={{width:36,height:36,borderRadius:"50%",background:C.surface2,border:`2px solid ${s.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>
+                  {s.emoji}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div style={{fontSize:13,fontWeight:600,color:C.textPrimary}}>{s.customer}</div>
+                    <div style={{fontSize:13,fontWeight:600,color:C.greenText,fontFamily:"'Space Grotesk',sans-serif"}}>{fmt(s.monetary,currency)}</div>
+                  </div>
+                  <div style={{display:"flex",gap:8,marginTop:3,alignItems:"center",flexWrap:"wrap"}}>
+                    <span style={{fontSize:10,padding:"2px 8px",borderRadius:20,background:C.surface2,color:s.color,fontWeight:600,border:`1px solid ${s.color}40`}}>{s.segment}</span>
+                    <span style={{fontSize:10,color:C.textMuted}}>{s.frequency} order{s.frequency>1?"s":""} · last {s.recency_days}d ago</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{marginLeft:46,fontSize:11,color:C.textMuted,lineHeight:1.5}}>
+                <span style={{color:C.textSecondary}}>{s.description}</span>
+                {" · "}
+                <span style={{color:C.gold,fontStyle:"italic"}}>{s.action}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="card">
         <div className="card-label" style={{marginBottom:12}}>{t.salesByChannel}</div>
         {channels.length === 0 ? (
@@ -2053,74 +2203,103 @@ function confirmLogout() {
     profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("settings")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
   };
 
+  // Sidebar nav icons (SVG for crisp rendering)
+  const SIDEBAR_ICONS = {
+    home:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+    sale:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>,
+    expenses:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>,
+    inventory: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg>,
+    customers: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
+    reports:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+  };
+
   return (
     <>
       <style>{styles}</style>
       <div className="app">
-        <div className="topbar">
-          <div className="topbar-brand">
-            <div className="brand-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <svg width="20" height="17" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#000" fillRule="evenodd"/>
-              </svg>
-            </div>
-            <div>
-              <div className="brand-name">VeeVak</div>
-              <div className="brand-sub">AI sales clarity</div>
-            </div>
-          </div>
-          <div className="topbar-actions">
-            <button className="btn-ghost" aria-label="Toggle theme" title={theme==="dark"?"Switch to light":"Switch to dark"} onClick={()=>handleThemeChange(theme==="dark"?"light":"dark")} style={{fontSize:16,padding:"6px 9px"}}>
-              {theme==="dark" ? "☀️" : "🌙"}
-            </button>
-            <button className="btn-ghost" onClick={()=>setTab("settings")}>⚙ {t.settings}</button>
-            <div className="shop-selector" onClick={()=>setShopOpen(o=>!o)}>
-              <span>🏪</span>
-              <span style={{maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeShop?.name || "Select shop"}</span>
-              <span style={{fontSize:10}}>▾</span>
-              {shopOpen && (
-                <div className="shop-dropdown" onClick={e=>e.stopPropagation()}>
-                  {shops.map(s=>(
-                    <div key={s.id} className={`shop-option ${activeShopId===s.id?"active":""}`}
-                      onClick={()=>{setActiveShopId(s.id);setShopOpen(false);}}>
-                      {s.name}
-                    </div>
-                  ))}
-                  <div className="divider"/>
-                  {!addingShop ? (
-                    <div className="shop-option" style={{color:C.gold,fontWeight:600}} onClick={()=>setAddingShop(true)}>
-                      + Add new shop
-                    </div>
-                  ) : (
-                    <div style={{padding:"8px 12px",display:"flex",gap:6}}>
-                      <input
-                        autoFocus
-                        className="form-input"
-                        style={{fontSize:12,padding:"6px 8px"}}
-                        placeholder="Shop name"
-                        value={newShopName}
-                        onChange={e=>setNewShopName(e.target.value)}
-                        onKeyDown={e=>e.key==="Enter"&&handleAddShop()}
-                      />
-                      <button className="btn-send" style={{width:32,height:32,fontSize:13}} onClick={handleAddShop}>✓</button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
 
-        <div className="page-content">{pages[tab]}</div>
-
-        <nav className="bottom-nav">
-          {NAV.map(n=>(
-            <button key={n.key} className={`nav-item ${tab===n.key?"active":""}`} onClick={()=>setTab(n.key)}>
-              <span className="nav-icon">{n.icon}</span>
-              {n.label}
+        {/* ── DESKTOP SIDEBAR ── */}
+        <aside className="app-sidebar">
+          <div className="sidebar-logo">
+            <svg width="20" height="17" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#000" fillRule="evenodd"/>
+            </svg>
+          </div>
+          {NAV.map(n => (
+            <button key={n.key} className={`sidebar-item ${tab===n.key?"active":""}`} onClick={()=>setTab(n.key)} title={n.label} aria-label={n.label}>
+              {SIDEBAR_ICONS[n.key] || n.icon}
             </button>
           ))}
-        </nav>
+          <div className="sidebar-bottom">
+            <button className="sidebar-item" onClick={()=>handleThemeChange(theme==="dark"?"light":"dark")} title="Toggle theme" style={{fontSize:16}}>
+              {theme==="dark" ? "☀️" : "🌙"}
+            </button>
+            <button className="sidebar-item" onClick={()=>setTab("settings")} title="Settings">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            </button>
+          </div>
+        </aside>
+
+        {/* ── MAIN BODY (topbar + content) ── */}
+        <div className="app-body">
+          <div className="topbar">
+            <div className="topbar-brand">
+              <div className="brand-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <svg width="20" height="17" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#000" fillRule="evenodd"/>
+                </svg>
+              </div>
+              <div>
+                <div className="brand-name">VeeVak</div>
+                <div className="brand-sub">AI sales clarity</div>
+              </div>
+            </div>
+            <div className="topbar-actions">
+              <button className="btn-ghost" aria-label="Toggle theme" title={theme==="dark"?"Switch to light":"Switch to dark"} onClick={()=>handleThemeChange(theme==="dark"?"light":"dark")} style={{fontSize:16,padding:"6px 9px"}}>
+                {theme==="dark" ? "☀️" : "🌙"}
+              </button>
+              <button className="btn-ghost" onClick={()=>setTab("settings")}>⚙ {t.settings}</button>
+              <div className="shop-selector" onClick={()=>setShopOpen(o=>!o)}>
+                <span>🏪</span>
+                <span style={{maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeShop?.name || "Select shop"}</span>
+                <span style={{fontSize:10}}>▾</span>
+                {shopOpen && (
+                  <div className="shop-dropdown" onClick={e=>e.stopPropagation()}>
+                    {shops.map(s=>(
+                      <div key={s.id} className={`shop-option ${activeShopId===s.id?"active":""}`}
+                        onClick={()=>{setActiveShopId(s.id);setShopOpen(false);}}>
+                        {s.name}
+                      </div>
+                    ))}
+                    <div className="divider"/>
+                    {!addingShop ? (
+                      <div className="shop-option" style={{color:C.gold,fontWeight:600}} onClick={()=>setAddingShop(true)}>
+                        + Add new shop
+                      </div>
+                    ) : (
+                      <div style={{padding:"8px 12px",display:"flex",gap:6}}>
+                        <input autoFocus className="form-input" style={{fontSize:12,padding:"6px 8px"}} placeholder="Shop name"
+                          value={newShopName} onChange={e=>setNewShopName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAddShop()}/>
+                        <button className="btn-send" style={{width:32,height:32,fontSize:13}} onClick={handleAddShop}>✓</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="page-content">{pages[tab]}</div>
+
+          <nav className="bottom-nav">
+            {NAV.map(n=>(
+              <button key={n.key} className={`nav-item ${tab===n.key?"active":""}`} onClick={()=>setTab(n.key)}>
+                <span className="nav-icon">{n.icon}</span>
+                {n.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
         <FloatingAssistant shopId={activeShopId} shopName={activeShop?.name||""} currency={config.currency} onChanged={triggerRefresh}/>
 

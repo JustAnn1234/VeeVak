@@ -432,6 +432,21 @@ async def anomalies(shop_id: int):
     return result
 
 
+@app.get("/segments/{shop_id}")
+async def customer_segments(shop_id: int):
+    """
+    K-Means RFM customer segmentation.
+    Groups customers into actionable segments with plain-English advice.
+    """
+    from ml.segmentation import segment_customers
+    conn = get_connection()
+    try:
+        result = segment_customers(shop_id, conn)
+    finally:
+        conn.close()
+    return result
+
+
 # ── Helpers ──────────────────────────────────────────────────────────
 
 def _to_iso_date(date_str: Optional[str]) -> str:
