@@ -2223,15 +2223,18 @@ const NAV = [
 
 export default function App() {
   const blogMatch = window.location.pathname.match(/^\/blog\/([^/]+)\/?$/);
-  const authMode = new URLSearchParams(window.location.search).get("auth");
+  const query = new URLSearchParams(window.location.search);
+  const authMode = query.get("auth");
+  const landingMode = query.get("landing") === "1";
+  const hasToken = Boolean(localStorage.getItem("veevak_token"));
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
-  const [showLanding, setShowLanding] = useState(() => !localStorage.getItem("veevak_token"));
+  const [showLanding, setShowLanding] = useState(() => landingMode || (!hasToken && !authMode));
   const [loginDirect, setLoginDirect] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(!blogMatch && !authMode);
+  const [checkingSession, setCheckingSession] = useState(!blogMatch && !landingMode);
   const [config, setConfig] = useState(() => {
     try { return JSON.parse(localStorage.getItem("veevak_user")) || {lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""}; }
     catch { return {lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""}; }
@@ -2256,7 +2259,7 @@ export default function App() {
   // On first load, check for a saved session and re-hydrate it from the backend
   // so a page refresh doesn't force the seller through onboarding again.
   useEffect(() => {
-    if (blogMatch || authMode) return;
+    if (blogMatch || landingMode) return;
     const token = localStorage.getItem("veevak_token");
     if (!token) { setCheckingSession(false); return; }
 
@@ -2298,7 +2301,7 @@ export default function App() {
 }
 
   function handleBackToHome() {
-    window.location.href = "/";
+    window.location.href = "/?landing=1";
   }
 
 function confirmLogout() {
@@ -2362,7 +2365,7 @@ function confirmLogout() {
   if (!onboarded) return (
     <>
       <style>{styles}</style>
-      {showLanding && !authMode
+      {showLanding && (!authMode || landingMode)
         ? <Landing
             onGetStarted={() => { setLoginDirect(false); setShowLanding(false); }}
             onLogin={() => { setLoginDirect(true); setShowLanding(false); }}

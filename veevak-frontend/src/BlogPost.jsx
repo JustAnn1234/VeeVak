@@ -4,12 +4,12 @@ export default function BlogPost({ slug }) {
   const post = blogPosts.find(item => item.slug === slug);
 
   if (!post) {
-    return <main style={pageStyle}><a href="/" style={backStyle}>← Back to Home</a><h1 style={titleStyle}>Article not found</h1></main>;
+    return <main style={pageStyle}><a href="/?landing=1" style={backStyle}>← Back to Home</a><h1 style={titleStyle}>Article not found</h1></main>;
   }
 
   return (
     <main style={pageStyle}>
-      <a href="/" style={backStyle}>← Back to Home</a>
+      <a href="/?landing=1" style={backStyle}>← Back to Home</a>
       <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:16}}>
         <span style={pillStyle}>{post.category}</span><span style={mutedStyle}>{post.readTime} · {post.date}</span>
       </div>
