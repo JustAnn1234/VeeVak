@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import Landing from "./Landing";
 
 // ── API configuration ───────────────────────────────────────────────
 const API_BASE = "https://veevak-backend.onrender.com";
@@ -62,16 +63,16 @@ async function apiAuthGet(path, token) {
 // ── Design tokens ─────────────────────────────────────────────────────
 const THEMES = {
   dark: {
-    bg:"#0F111A", surface:"#1A1D2E", surface2:"#232740", border:"#353A58",
-    gold:"#6C5CE7", goldLight:"#8A7CFF", goldDim:"#403989",
-    green:"#087F78", greenText:"#00E676", red:"#8F3D50", redText:"#FF6B81",
-    textPrimary:"#F5F7FF", textSecondary:"#B5BAD2", textMuted:"#7C83A1",
+    bg:"#0a0a0f", surface:"#13131a", surface2:"#1a1a24", border:"#2a2a3d",
+    gold:"#7c6af7", goldLight:"#9d8ff9", goldDim:"#3d3580",
+    green:"#1a6b4a", greenText:"#34d399", red:"#7d1f2e", redText:"#f87171",
+    textPrimary:"#f0eeff", textSecondary:"#8080a8", textMuted:"#4a4a6a",
   },
   light: {
-    bg:"#f5f3ee", surface:"#ffffff", surface2:"#f0ede5", border:"#ddd8cc",
-    gold:"#5748C9", goldLight:"#6C5CE7", goldDim:"#DCD8FF",
+    bg:"#f8f8ff", surface:"#ffffff", surface2:"#f0f0fa", border:"#e0e0f0",
+    gold:"#5b4fe0", goldLight:"#7c6af7", goldDim:"#d4d0f5",
     green:"#087F78", greenText:"#007A52", red:"#B33E55", redText:"#A92E48",
-    textPrimary:"#171A2A", textSecondary:"#4E5573", textMuted:"#707894",
+    textPrimary:"#0a0a1a", textSecondary:"#4a4a6a", textMuted:"#8080a8",
   },
 };
 
@@ -262,11 +263,11 @@ const makeStyles = (C) => `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background:${C.bg}; color:${C.textPrimary}; font-family:'Inter',sans-serif; font-size:14px; line-height:1.5; min-height:100vh; -webkit-font-smoothing:antialiased; }
 
-  .app { max-width:480px; width:100%; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:${C.bg}; }
+  .app { width:100%; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:${C.bg}; }
   @media (min-width: 900px) {
     .app { max-width:1400px; margin: 0 auto; }
     .page-content { padding:28px 48px 90px; align-items:center; }
-    .page-content > * { width:100%; max-width:1000px; }
+    .page-content > * { width:100%; max-width:720px; margin-left:auto; margin-right:auto; }
     .topbar { padding:18px 48px 14px; }
   }
 
@@ -1601,7 +1602,7 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
   );
 }
 
-function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic, onSave, onOpenProfile, onClose }) {
+function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic, onSave, onOpenProfile, onClose, onLogout }) {
   const [selLang, setSelLang] = useState(lang);
   const [selCurrency, setSelCurrency] = useState(currency);
   const [name, setName] = useState(bizName);
@@ -1663,6 +1664,14 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic
           </button>
         </div>
       </div>
+      <button
+        onClick={onLogout}
+        style={{marginTop:8,background:"transparent",border:`1px solid ${C.redText}`,borderRadius:10,padding:"12px 20px",fontSize:13,fontWeight:600,color:C.redText,cursor:"pointer",width:"100%",fontFamily:"'Inter',sans-serif",transition:"background 0.15s"}}
+        onMouseOver={e=>e.currentTarget.style.background=C.red}
+        onMouseOut={e=>e.currentTarget.style.background="transparent"}
+      >
+        🚪 Log out
+      </button>
     </div>
   );
 }
@@ -1760,9 +1769,9 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
         </div>
         <div className="assistant-hint">Enter adds a new line. Ctrl+Enter sends.</div>
       </div>}
-      <button className="assistant-launcher" style={position ? {left:position.left,top:position.top,right:"auto",bottom:"auto"} : undefined} aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onPointerDown={startDragging} onClick={()=>{if(draggedRef.current){draggedRef.current=false;return;}setOpen(value=>!value);}}>
-        {open ? "×" : <svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill="#001819"/>
+      <button className="assistant-launcher" style={{...(position ? {left:position.left,top:position.top,right:"auto",bottom:"auto"} : undefined), background:`linear-gradient(135deg,${C.gold},${C.goldDim})`}} aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onPointerDown={startDragging} onClick={()=>{if(draggedRef.current){draggedRef.current=false;return;}setOpen(value=>!value);}}>
+        {open ? <span style={{fontSize:22,color:"#fff",lineHeight:1}}>×</span> : <svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill="#fff"/>
         </svg>}
       </button>
     </>
@@ -1784,6 +1793,7 @@ const NAV = [
 export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
+  const [showLanding, setShowLanding] = useState(() => !localStorage.getItem("veevak_token"));
   const [checkingSession, setCheckingSession] = useState(true);
   const [config, setConfig] = useState({lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""});
   const [sellerId, setSellerId] = useState(null);
@@ -1851,6 +1861,7 @@ function confirmLogout() {
   setShops([]);
   setActiveShopId(null);
   setShowLogoutConfirm(false);
+  setShowLanding(true);
 }
 
   async function handleAddShop() {
@@ -1951,7 +1962,10 @@ function confirmLogout() {
   if (!onboarded) return (
     <>
       <style>{styles}</style>
-      <Onboarding onComplete={handleOnboardComplete}/>
+      {showLanding
+        ? <Landing onGetStarted={() => setShowLanding(false)}/>
+        : <Onboarding onComplete={handleOnboardComplete}/>
+      }
     </>
   );
 
@@ -1962,7 +1976,7 @@ function confirmLogout() {
     inventory: <Inventory t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey} onChanged={triggerRefresh}/>,
     customers: <Customers t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
     reports:   <Reports t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
-    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")} onClose={()=>setTab("home")}/>,
+    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")} onClose={()=>setTab("home")} onLogout={handleLogout}/>,
     profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("settings")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
   };
 
@@ -2039,7 +2053,6 @@ function confirmLogout() {
           </div>
           <div className="topbar-actions">
             <button className="btn-ghost" onClick={()=>setTab("settings")}>⚙ {t.settings}</button>
-            <button className="btn-ghost" onClick={handleLogout}>🚪 Logout</button>
             <div className="shop-selector" onClick={()=>setShopOpen(o=>!o)}>
               <span>🏪</span>
               <span style={{maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeShop?.name || "Select shop"}</span>
