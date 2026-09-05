@@ -63,14 +63,14 @@ async function apiAuthGet(path, token) {
 // ── Design tokens ─────────────────────────────────────────────────────
 const THEMES = {
   dark: {
-    bg:"#0a0a0f", surface:"#13131a", surface2:"#1a1a24", border:"#2a2a3d",
-    gold:"#7c6af7", goldLight:"#9d8ff9", goldDim:"#3d3580",
+    bg:"#11111f", surface:"#181828", surface2:"#1e1e34", border:"#2e2e50",
+    gold:"#8b7ff5", goldLight:"#c4bcff", goldDim:"#312c6e",
     green:"#1a6b4a", greenText:"#34d399", red:"#7d1f2e", redText:"#f87171",
-    textPrimary:"#f0eeff", textSecondary:"#8080a8", textMuted:"#4a4a6a",
+    textPrimary:"#e8e6ff", textSecondary:"#9090b0", textMuted:"#5a5a7a",
   },
   light: {
-    bg:"#f8f8ff", surface:"#ffffff", surface2:"#f0f0fa", border:"#e0e0f0",
-    gold:"#5b4fe0", goldLight:"#7c6af7", goldDim:"#d4d0f5",
+    bg:"#f5f5ff", surface:"#ffffff", surface2:"#eeeeff", border:"#dcdcf0",
+    gold:"#5b4fe0", goldLight:"#7c6af7", goldDim:"#dddaf8",
     green:"#087F78", greenText:"#007A52", red:"#B33E55", redText:"#A92E48",
     textPrimary:"#0a0a1a", textSecondary:"#4a4a6a", textMuted:"#8080a8",
   },
@@ -599,7 +599,7 @@ function ForgotPassword({ email, setEmail, onBack }) {
 // ══════════════════════════════════════════════════════════════════════
 // ONBOARDING
 // ══════════════════════════════════════════════════════════════════════
-function Onboarding({ onComplete, startOnLogin }) {
+function Onboarding({ onComplete, startOnLogin, onBackToLanding }) {
   const [mode, setMode] = useState(startOnLogin ? "login" : "welcome"); // welcome | signup | login | business | forgot
   const [lang, setLang] = useState("en");
   const [currency, setCurrency] = useState("NGN");
@@ -746,6 +746,11 @@ function Onboarding({ onComplete, startOnLogin }) {
           <div className="onboard-step">
             <button className="btn-primary" onClick={() => setMode("signup")}>Create Account</button>
             <button className="btn-secondary" onClick={() => setMode("login")}>I already have an account</button>
+            {onBackToLanding && (
+              <button onClick={onBackToLanding} style={{background:"none",border:"none",fontSize:13,color:C.textSecondary,cursor:"pointer",padding:"4px 0",fontFamily:"'Inter',sans-serif",textDecoration:"underline",alignSelf:"center"}}>
+                ← Back to home page
+              </button>
+            )}
           </div>
         </>
       )}
@@ -774,6 +779,11 @@ function Onboarding({ onComplete, startOnLogin }) {
             </button>
             {error && <div style={{fontSize:12,color:C.redText,textAlign:"center"}}>{error}</div>}
             <button className="btn-secondary" onClick={() => { setMode("welcome"); setError(""); }}>← Back</button>
+            {onBackToLanding && (
+              <button onClick={onBackToLanding} style={{background:"none",border:"none",fontSize:12,color:C.textMuted,cursor:"pointer",padding:"4px 0",fontFamily:"'Inter',sans-serif",textDecoration:"underline",alignSelf:"center"}}>
+                ← Back to home page
+              </button>
+            )}
           </div>
         </>
       )}
@@ -2028,7 +2038,7 @@ function confirmLogout() {
             onGetStarted={() => { setLoginDirect(false); setShowLanding(false); }}
             onLogin={() => { setLoginDirect(true); setShowLanding(false); }}
           />
-        : <Onboarding onComplete={handleOnboardComplete} startOnLogin={loginDirect}/>
+        : <Onboarding onComplete={handleOnboardComplete} startOnLogin={loginDirect} onBackToLanding={() => setShowLanding(true)}/>
       }
     </>
   );
