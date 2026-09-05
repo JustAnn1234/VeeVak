@@ -2,11 +2,13 @@ import pandas as pd
 import numpy as np
 from datetime import date, timedelta
 
+from database.db import fix_sql
+
 
 def get_customer_transactions(shop_id: int, conn) -> pd.DataFrame:
     """Pull all sales grouped by customer for RFM analysis."""
     cursor = conn.cursor()
-    cursor.execute("""
+    cursor.execute(fix_sql("""
         SELECT
             customer_name,
             COUNT(*) as frequency,
@@ -21,7 +23,7 @@ def get_customer_transactions(shop_id: int, conn) -> pd.DataFrame:
         GROUP BY customer_name
         HAVING COUNT(*) >= 1
         ORDER BY monetary DESC
-    """, (shop_id,))
+    """), (shop_id,))
     rows = cursor.fetchall()
 
     if not rows:

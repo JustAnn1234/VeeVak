@@ -2,17 +2,19 @@ import pandas as pd
 from datetime import date, timedelta
 import json
 
+from database.db import fix_sql
+
 
 def get_sales_dataframe(shop_id: int, conn) -> pd.DataFrame:
     """Pull all sales for a shop into a pandas DataFrame."""
     cursor = conn.cursor()
-    cursor.execute("""
+    cursor.execute(fix_sql("""
         SELECT sale_date, COALESCE(SUM(order_total), 0) as total
         FROM sales
         WHERE shop_id = ? AND order_status != 'cancelled'
         GROUP BY sale_date
         ORDER BY sale_date
-    """, (shop_id,))
+    """), (shop_id,))
     rows = cursor.fetchall()
 
     if not rows:

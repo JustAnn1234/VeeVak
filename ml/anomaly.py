@@ -2,28 +2,30 @@ import pandas as pd
 import numpy as np
 from datetime import date, timedelta
 
+from database.db import fix_sql
+
 
 def get_recent_data(shop_id: int, conn, days: int = 60) -> tuple:
     """Pull sales and expenses for the last N days."""
     cursor = conn.cursor()
     since = (date.today() - timedelta(days=days)).isoformat()
 
-    cursor.execute("""
+    cursor.execute(fix_sql("""
         SELECT sale_date as d, COALESCE(SUM(order_total), 0) as total
         FROM sales
         WHERE shop_id = ? AND sale_date >= ? AND order_status != 'cancelled'
         GROUP BY sale_date
         ORDER BY sale_date
-    """, (shop_id, since))
+    """), (shop_id, since))
     sales_rows = cursor.fetchall()
 
-    cursor.execute("""
+    cursor.execute(fix_sql("""
         SELECT expense_date as d, COALESCE(SUM(amount), 0) as total
         FROM expenses
         WHERE shop_id = ? AND expense_date >= ?
         GROUP BY expense_date
         ORDER BY expense_date
-    """, (shop_id, since))
+    """), (shop_id, since))
     expense_rows = cursor.fetchall()
 
     return sales_rows, expense_rows

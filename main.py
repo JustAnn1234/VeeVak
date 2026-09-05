@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
@@ -21,9 +21,10 @@ from database.db import (
     init_db, create_seller, get_seller_by_email, create_shop, get_shops_for_seller,
     save_sale, get_sales_for_shop, save_expense, get_expenses_for_shop,
     upsert_inventory_item, get_inventory_for_shop, get_shop_analytics,
-    verify_password, create_session, get_seller_by_session, update_seller_profile,
-    get_connection
+    verify_password, create_session, get_seller_by_session, update_seller_profile
 )
+from database.db import get_connection
+from ml.forecasting import forecast_revenue
 
 load_dotenv()
 
@@ -403,48 +404,38 @@ async def analytics(shop_id: int):
 
 
 @app.get("/forecast/{shop_id}")
-async def forecast(shop_id: int, periods: int = 14):
-    """
-    Revenue forecasting using Prophet time-series model.
-    Returns predicted revenue for the next N days with confidence intervals.
-    """
-    from ml.forecasting import forecast_revenue
+async def forecast(shop_id: int, periods: int = Query(default=14, ge=1, le=90)):
     conn = get_connection()
     try:
-        result = forecast_revenue(shop_id, conn, periods=periods)
+        return forecast_revenue(shop_id, conn, periods)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Forecast failed: {exc}") from exc
     finally:
         conn.close()
-    return result
 
 
 @app.get("/anomalies/{shop_id}")
 async def anomalies(shop_id: int):
-    """
-    Isolation Forest anomaly detection on sales and expense patterns.
-    Returns plain-English alerts for unusual activity.
-    """
     from ml.anomaly import detect_anomalies
     conn = get_connection()
     try:
-        result = detect_anomalies(shop_id, conn)
+        return detect_anomalies(shop_id, conn)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Anomaly detection failed: {exc}") from exc
     finally:
         conn.close()
-    return result
 
 
 @app.get("/segments/{shop_id}")
 async def customer_segments(shop_id: int):
-    """
-    K-Means RFM customer segmentation.
-    Groups customers into actionable segments with plain-English advice.
-    """
     from ml.segmentation import segment_customers
     conn = get_connection()
     try:
-        result = segment_customers(shop_id, conn)
+        return segment_customers(shop_id, conn)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Customer segmentation failed: {exc}") from exc
     finally:
         conn.close()
-    return result
 
 
 # ── Helpers ──────────────────────────────────────────────────────────

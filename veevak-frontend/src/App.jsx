@@ -1,7 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import Landing from "./Landing";
-import Privacy from "./Privacy";
-import Terms from "./Terms";
 
 // ── API configuration ───────────────────────────────────────────────
 const API_BASE = "https://veevak-backend.onrender.com";
@@ -65,16 +62,16 @@ async function apiAuthGet(path, token) {
 // ── Design tokens ─────────────────────────────────────────────────────
 const THEMES = {
   dark: {
-    bg:"#11111f", surface:"#181828", surface2:"#1e1e34", border:"#2e2e50",
-    gold:"#8b7ff5", goldLight:"#c4bcff", goldDim:"#312c6e",
-    green:"#1a6b4a", greenText:"#34d399", red:"#7d1f2e", redText:"#f87171",
-    textPrimary:"#e8e6ff", textSecondary:"#9090b0", textMuted:"#5a5a7a",
+    bg:"#0F111A", surface:"#1A1D2E", surface2:"#232740", border:"#353A58",
+    gold:"#6C5CE7", goldLight:"#8A7CFF", goldDim:"#403989",
+    green:"#087F78", greenText:"#00E676", red:"#8F3D50", redText:"#FF6B81",
+    textPrimary:"#F5F7FF", textSecondary:"#B5BAD2", textMuted:"#7C83A1",
   },
   light: {
-    bg:"#f5f5ff", surface:"#ffffff", surface2:"#eeeeff", border:"#dcdcf0",
-    gold:"#5b4fe0", goldLight:"#7c6af7", goldDim:"#dddaf8",
+    bg:"#f5f3ee", surface:"#ffffff", surface2:"#f0ede5", border:"#ddd8cc",
+    gold:"#5748C9", goldLight:"#6C5CE7", goldDim:"#DCD8FF",
     green:"#087F78", greenText:"#007A52", red:"#B33E55", redText:"#A92E48",
-    textPrimary:"#0a0a1a", textSecondary:"#4a4a6a", textMuted:"#8080a8",
+    textPrimary:"#171A2A", textSecondary:"#4E5573", textMuted:"#707894",
   },
 };
 
@@ -265,56 +262,13 @@ const makeStyles = (C) => `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background:${C.bg}; color:${C.textPrimary}; font-family:'Inter',sans-serif; font-size:14px; line-height:1.5; min-height:100vh; -webkit-font-smoothing:antialiased; }
 
-  /* ── DESKTOP SIDEBAR LAYOUT ── */
-  .app { width:100%; min-height:100vh; display:flex; flex-direction:column; background:${C.bg}; }
-
+  .app { max-width:480px; width:100%; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:${C.bg}; }
   @media (min-width: 900px) {
-    .app { flex-direction:row; }
-    .app-sidebar { display:flex !important; }
-    .bottom-nav { display:none !important; }
-    .topbar { padding:20px 32px 16px; border-bottom:1px solid ${C.border}; }
-    .page-content { padding:24px 32px 40px; }
-    .page-content > * { width:100%; }
-    .app-body { flex:1; display:flex; flex-direction:column; min-width:0; }
-    /* 2-column grid for stat cards on desktop */
-    .home-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    .home-grid-full { grid-column:1/-1; }
+    .app { max-width:1400px; margin: 0 auto; }
+    .page-content { padding:28px 48px 90px; align-items:center; }
+    .page-content > * { width:100%; max-width:1000px; }
+    .topbar { padding:18px 48px 14px; }
   }
-
-  /* Sidebar */
-  .app-sidebar {
-    display:none;
-    width:64px;
-    min-height:100vh;
-    background:#0e0e1a;
-    border-right:1px solid ${C.border};
-    flex-direction:column;
-    align-items:center;
-    padding:16px 0;
-    gap:4px;
-    flex-shrink:0;
-    position:sticky;
-    top:0;
-    height:100vh;
-    overflow:hidden;
-    z-index:60;
-  }
-  .sidebar-logo {
-    width:36px; height:36px; border-radius:10px;
-    background:linear-gradient(135deg,${C.gold},${C.goldDim});
-    display:flex; align-items:center; justify-content:center;
-    margin-bottom:16px; flex-shrink:0;
-  }
-  .sidebar-item {
-    width:44px; height:44px; border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer; border:none; background:transparent;
-    color:${C.textMuted}; font-size:18px; transition:all 0.15s;
-    flex-shrink:0;
-  }
-  .sidebar-item:hover { background:${C.surface2}; color:${C.textSecondary}; }
-  .sidebar-item.active { background:${C.surface2}; color:${C.gold}; }
-  .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:4px; }
 
   /* ONBOARDING */
   .onboard { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:0; background:${C.bg}; }
@@ -352,6 +306,16 @@ const makeStyles = (C) => `
   .topbar-actions { display:flex; align-items:center; gap:8px; }
   .btn-ghost { background:transparent; border:1px solid ${C.border}; color:${C.textSecondary}; border-radius:8px; padding:6px 10px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.15s; }
   .btn-ghost:hover { border-color:${C.gold}; color:${C.gold}; }
+  .notification-wrap { position:relative; }
+  .notification-button { position:relative; width:38px; height:38px; border:1px solid ${C.border}; border-radius:10px; background:${C.surface}; color:${C.textPrimary}; cursor:pointer; font-size:18px; }
+  .notification-button:hover { border-color:${C.gold}; color:${C.gold}; }
+  .notification-count { position:absolute; top:-5px; right:-5px; min-width:17px; height:17px; padding:0 4px; border-radius:9px; background:${C.redText}; color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .notification-menu { position:absolute; top:calc(100% + 8px); right:0; width:min(340px,calc(100vw - 32px)); background:${C.surface}; border:1px solid ${C.border}; border-radius:12px; padding:14px; z-index:110; box-shadow:0 12px 36px rgba(0,0,0,0.45); }
+  .notification-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .notification-title { color:${C.textPrimary}; font-size:14px; font-weight:600; }
+  .notification-item { display:flex; gap:9px; padding:10px 0; border-top:1px solid ${C.border}; color:${C.textSecondary}; font-size:12px; line-height:1.45; }
+  .notification-item strong { color:${C.textPrimary}; font-weight:600; }
+  .notification-dot { width:7px; height:7px; margin-top:5px; border-radius:50%; background:${C.gold}; flex-shrink:0; }
 
   /* SHOP SELECTOR */
   .shop-selector { background:${C.surface}; border:1px solid ${C.border}; color:${C.textPrimary}; border-radius:8px; padding:6px 10px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; position:relative; }
@@ -363,8 +327,15 @@ const makeStyles = (C) => `
   /* NAV */
   .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:${C.surface}; border-top:1px solid ${C.border}; display:flex; z-index:50; }
   @media (min-width: 900px) {
-    .bottom-nav { max-width:1200px; }
+    .bottom-nav { top:0; bottom:0; left:0; transform:none; width:88px; max-width:none; border-top:none; border-right:1px solid ${C.border}; flex-direction:column; padding:16px 10px; gap:8px; }
+    .nav-item { flex:none; width:68px; min-height:58px; padding:10px 4px; }
+    .rail-profile { display:flex; }
+    .topbar, .page-content { margin-left:88px; }
   }
+  .rail-profile { display:none; flex-direction:column; align-items:center; gap:6px; width:68px; padding:8px 0 14px; margin-bottom:4px; border-bottom:1px solid ${C.border}; background:transparent; border-left:0; border-right:0; border-top:0; cursor:pointer; color:${C.textMuted}; }
+  .rail-profile:hover { color:${C.gold}; }
+  .rail-profile-avatar { width:44px; height:44px; border-radius:14px; background:${C.goldDim}; color:${C.goldLight}; display:flex; align-items:center; justify-content:center; overflow:hidden; font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700; }
+  .rail-profile-label { font-size:9px; letter-spacing:0.06em; text-transform:uppercase; }
   .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 4px 14px; cursor:pointer; color:${C.textMuted}; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; font-weight:500; transition:color 0.15s; border:none; background:transparent; }
   .nav-item.active { color:${C.gold}; }
   .nav-icon { font-size:18px; line-height:1; }
@@ -572,6 +543,12 @@ const ChannelBadge = ({ ch }) => {
   return <span className={`sale-channel ${map[ch]||"ch-offline"}`}>{ch}</span>;
 };
 
+function OwnerAvatar({ profilePic, ownerName, className = "" }) {
+  return profilePic
+    ? <img className={className} src={profilePic} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+    : <span className={className}>{(ownerName || "V").trim().charAt(0).toUpperCase()}</span>;
+}
+
 function LineChart({ data }) {
   const max = Math.max(...data);
   const w=300, h=70;
@@ -588,115 +565,11 @@ function LineChart({ data }) {
   );
 }
 
-function ForecastChart({ history, forecast }) {
-  const allValues = [
-    ...history.map(h => h.actual || 0),
-    ...forecast.map(f => f.predicted || 0),
-    ...forecast.map(f => f.upper || 0),
-  ];
-  const max = Math.max(1, ...allValues);
-  const totalPoints = history.length + forecast.length;
-  if (totalPoints < 2) return null;
-  const w = 300, h = 70;
-
-  const toX = i => (i / (totalPoints - 1)) * w;
-  const toY = v => h - (v / max) * (h - 8);
-
-  const historyPts  = history.map((d, i)  => [toX(i), toY(d.actual || 0)]);
-  const forecastPts = forecast.map((d, i) => [toX(history.length + i), toY(d.predicted || 0)]);
-  const upperPts    = forecast.map((d, i) => [toX(history.length + i), toY(d.upper || 0)]);
-  const lowerPts    = forecast.map((d, i) => [toX(history.length + i), toY(d.lower || 0)]);
-
-  const histPath = historyPts.map((p,i) => `${i===0?"M":"L"}${p[0]},${p[1]}`).join(" ");
-  const histFill = historyPts.length > 0
-    ? `${histPath} L${historyPts[historyPts.length-1][0]},${h} L0,${h} Z`
-    : "";
-
-  const lastHist = historyPts[historyPts.length - 1];
-  const forecastPath = forecastPts.length > 0 && lastHist
-    ? `M${lastHist[0]},${lastHist[1]} ` + forecastPts.map(p => `L${p[0]},${p[1]}`).join(" ")
-    : "";
-
-  const confidenceBand = upperPts.length > 0
-    ? `M${upperPts.map(p=>`${p[0]},${p[1]}`).join(" L")} L${[...lowerPts].reverse().map(p=>`${p[0]},${p[1]}`).join(" L")} Z`
-    : "";
-
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{width:"100%",height:80}}>
-      <defs>
-        <linearGradient id="histGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={C.gold} stopOpacity="0.3"/>
-          <stop offset="100%" stopColor={C.gold} stopOpacity="0"/>
-        </linearGradient>
-      </defs>
-      {histFill      && <path d={histFill}       fill="url(#histGrad)"/>}
-      {histPath      && <path d={histPath}        fill="none" stroke={C.gold} strokeWidth="1.5"/>}
-      {confidenceBand && <path d={confidenceBand} fill={C.gold} fillOpacity="0.1"/>}
-      {forecastPath  && <path d={forecastPath}    fill="none" stroke={C.gold} strokeWidth="1.5" strokeDasharray="4,3" opacity="0.7"/>}
-      {lastHist      && <circle cx={lastHist[0]} cy={lastHist[1]} r="2.5" fill={C.gold}/>}
-    </svg>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════
-// FORGOT PASSWORD
-// ══════════════════════════════════════════════════════════════════════
-function ForgotPassword({ email, setEmail, onBack }) {
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  function handleSend() {
-    if (!email.trim()) return;
-    setLoading(true);
-    // No backend email service yet — open mailto as a fallback
-    setTimeout(() => {
-      setLoading(false);
-      setSent(true);
-    }, 1200);
-  }
-
-  return (
-    <>
-      <div className="onboard-title" style={{fontSize:20,marginBottom:6}}>Reset your password</div>
-      <div className="onboard-sub" style={{marginBottom:24}}>
-        {sent ? "Email sent! Check your inbox." : "Enter your email and we'll help you reset your password."}
-      </div>
-      <div className="onboard-step">
-        {!sent ? (
-          <>
-            <div className="form-field">
-              <label className="form-label">Email address</label>
-              <input className="form-input" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)}/>
-            </div>
-            <button className="btn-primary" onClick={handleSend} disabled={!email.trim()||loading}>
-              {loading ? "Sending..." : "Send reset instructions"}
-            </button>
-            <div style={{fontSize:12,color:C.textSecondary,textAlign:"center",lineHeight:1.6}}>
-              We'll send a link to <strong style={{color:C.textPrimary}}>{email||"your email"}</strong>.<br/>
-              If you don't see it, email us at{" "}
-              <a href="mailto:info.veevak@gmail.com" style={{color:C.gold}}>info.veevak@gmail.com</a>.
-            </div>
-          </>
-        ) : (
-          <div style={{textAlign:"center",padding:"12px 0"}}>
-            <div style={{fontSize:40,marginBottom:12}}>📬</div>
-            <div style={{fontSize:13,color:C.textSecondary,lineHeight:1.7}}>
-              Instructions sent to <strong style={{color:C.textPrimary}}>{email}</strong>.<br/>
-              Check your inbox (and spam folder).
-            </div>
-          </div>
-        )}
-        <button className="btn-secondary" onClick={onBack}>← Back to Log In</button>
-      </div>
-    </>
-  );
-}
-
 // ══════════════════════════════════════════════════════════════════════
 // ONBOARDING
 // ══════════════════════════════════════════════════════════════════════
-function Onboarding({ onComplete, startOnLogin, onBackToLanding }) {
-  const [mode, setMode] = useState(startOnLogin ? "login" : "welcome"); // welcome | signup | login | business | forgot
+function Onboarding({ onComplete }) {
+  const [mode, setMode] = useState("welcome"); // welcome | signup | login | business
   const [lang, setLang] = useState("en");
   const [currency, setCurrency] = useState("NGN");
   const [bizName, setBizName] = useState("");
@@ -776,10 +649,65 @@ function Onboarding({ onComplete, startOnLogin, onBackToLanding }) {
   return (
     <div className="onboard">
       <div className="onboard-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <svg width="48" height="41" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-label="VeeVak">
-          <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill={C.gold} fillRule="evenodd"/>
-        </svg>
-      </div>
+  <svg
+  width="20"
+  height="20"
+  viewBox="0 0 100 80"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path
+    d="
+      M8 8
+      H32
+      L50 33
+      L68 8
+      H92
+      V55
+      L78 70
+      H62
+      L50 53
+      L38 70
+      H22
+      L8 55
+      Z
+    "
+    fill="#000000"
+  />
+
+  <path
+    d="
+      M22 18
+      V48
+      L34 58
+      L43 40
+      Z
+    "
+    fill={C.gold}
+  />
+
+  <path
+    d="
+      M78 18
+      V48
+      L66 58
+      L57 40
+      Z
+    "
+    fill={C.gold}
+  />
+
+  <path
+    d="
+      M40 22
+      L50 36
+      L60 22
+      L50 48
+      Z
+    "
+    fill={C.gold}
+  />
+</svg>
+</div>
       {mode === "welcome" && (
         <>
           <div className="onboard-title">{t.welcome}</div>
@@ -787,11 +715,6 @@ function Onboarding({ onComplete, startOnLogin, onBackToLanding }) {
           <div className="onboard-step">
             <button className="btn-primary" onClick={() => setMode("signup")}>Create Account</button>
             <button className="btn-secondary" onClick={() => setMode("login")}>I already have an account</button>
-            {onBackToLanding && (
-              <button onClick={onBackToLanding} style={{background:"none",border:"none",fontSize:13,color:C.textSecondary,cursor:"pointer",padding:"4px 0",fontFamily:"'Inter',sans-serif",textDecoration:"underline",alignSelf:"center"}}>
-                ← Back to home page
-              </button>
-            )}
           </div>
         </>
       )}
@@ -811,26 +734,14 @@ function Onboarding({ onComplete, startOnLogin, onBackToLanding }) {
                 <input className="form-input" type={showPw?"text":"password"} placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()} style={{paddingRight:40}}/>
                 <span onClick={()=>setShowPw(s=>!s)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",cursor:"pointer",fontSize:16,color:C.textMuted}}>{showPw?"🙈":"👁"}</span>
               </div>
-              <div style={{textAlign:"right",marginTop:6}}>
-                <button onClick={()=>{setMode("forgot");setError("");}} style={{background:"none",border:"none",fontSize:12,color:C.gold,cursor:"pointer",padding:0,fontFamily:"'Inter',sans-serif"}}>Forgot password?</button>
-              </div>
             </div>
             <button className="btn-primary" onClick={handleLogin} disabled={!email.trim()||!password||loading}>
               {loading ? "Logging in..." : "Log In"}
             </button>
             {error && <div style={{fontSize:12,color:C.redText,textAlign:"center"}}>{error}</div>}
             <button className="btn-secondary" onClick={() => { setMode("welcome"); setError(""); }}>← Back</button>
-            {onBackToLanding && (
-              <button onClick={onBackToLanding} style={{background:"none",border:"none",fontSize:12,color:C.textMuted,cursor:"pointer",padding:"4px 0",fontFamily:"'Inter',sans-serif",textDecoration:"underline",alignSelf:"center"}}>
-                ← Back to home page
-              </button>
-            )}
           </div>
         </>
-      )}
-
-      {mode === "forgot" && (
-        <ForgotPassword email={email} setEmail={setEmail} onBack={()=>{setMode("login");setError("");}} />
       )}
 
       {mode === "signup" && (
@@ -910,10 +821,10 @@ function Onboarding({ onComplete, startOnLogin, onBackToLanding }) {
 // PAGES
 // ══════════════════════════════════════════════════════════════════════
 function Home({ t, currency, shopId, refreshKey, ownerName }) {
-  const [data, setData]           = useState(null);
+  const [data, setData] = useState(null);
   const [anomalies, setAnomalies] = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!shopId) return;
@@ -943,129 +854,80 @@ function Home({ t, currency, shopId, refreshKey, ownerName }) {
   const recentSales = data?.recent_sales || [];
   const weekly = data?.weekly_revenue || [];
 
+  // Build a Mon-Sun bar chart from whatever days of data exist this week
   const weekMap = {};
   weekly.forEach(w => { weekMap[w.date] = w.total; });
   const maxWeekly = Math.max(1, ...weekly.map(w => w.total));
 
-  const ALERT_COLORS = {
-    positive: { bg:"#0d1a10", border:"#1a3a1a", icon:"🚀", text: C.greenText  },
-    warning:  { bg:"#1a1200", border:"#3a2a00", icon:"⚠️", text: C.goldLight  },
-    caution:  { bg:"#1a0d00", border:"#3a1a00", icon:"💸", text: "#fb923c"    },
-    info:     { bg: C.surface2, border: C.border, icon:"💡", text: C.textSecondary },
-  };
-
-  // Channel breakdown from recent sales
-  const channelCounts = {};
-  recentSales.forEach(s => { channelCounts[s.channel] = (channelCounts[s.channel]||0) + 1; });
-  const totalCh = Object.values(channelCounts).reduce((a,b)=>a+b,0);
-  const channelColors = { whatsapp:C.gold, instagram:C.accentLight||"#a78bfa", offline:C.textSecondary, facebook:"#818cf8", tiktok:"#e879f9" };
-  const channelList = Object.entries(channelCounts)
-    .map(([name,count]) => ({ name, pct: totalCh ? Math.round((count/totalCh)*100) : 0, color: channelColors[name]||C.textMuted }))
-    .sort((a,b)=>b.pct-a.pct);
-
   return (
     <>
-      {/* Greeting row — full width */}
-      <div className="home-grid-full" style={{marginBottom:4}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
-          <div>
-            <div style={{fontSize:18,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif",color:C.textPrimary}}>{greeting()}, {(ownerName||"there").split(" ")[0]} 👋</div>
-            <div style={{fontSize:12,color:C.textSecondary,marginTop:2}}>Here's how your business is doing today</div>
-          </div>
-        </div>
+      <div style={{marginBottom:4}}>
+        <div style={{fontSize:18,fontWeight:600,fontFamily:"Space Grotesk",color:C.textPrimary}}>{greeting()}, {(ownerName||"there").split(" ")[0]} 👋</div>
+        <div style={{fontSize:12,color:C.textSecondary,marginTop:2}}>Here's how your business is doing today</div>
       </div>
-
-      {/* Anomaly alerts — full width */}
       {anomalies?.alerts?.length > 0 && (
-        <div className="home-grid-full" style={{display:"flex",flexDirection:"column",gap:8}}>
-          {anomalies.alerts.map((alert, i) => {
-            const s = ALERT_COLORS[alert.severity] || ALERT_COLORS.info;
-            return (
-              <div key={i} style={{background:s.bg,border:`1px solid ${s.border}`,borderRadius:10,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
-                <span style={{fontSize:16,flexShrink:0}}>{s.icon}</span>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:12,fontWeight:600,color:s.text,marginBottom:2}}>{alert.title.toUpperCase()}</div>
-                  <div style={{fontSize:12,color:C.textSecondary,lineHeight:1.5}}>{alert.message}</div>
-                  {alert.metric && <div style={{fontSize:11,color:C.textMuted,marginTop:4,fontFamily:"'Space Grotesk',sans-serif"}}>{alert.metric}</div>}
-                </div>
-              </div>
-            );
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {anomalies.alerts.map((alert, index) => {
+            const alertStyles = {
+              positive:{bg:"#0d1a10",border:"#1a3a1a",icon:"🚀",text:C.greenText},
+              warning:{bg:"#1a1200",border:"#3a2a00",icon:"⚠️",text:C.goldLight},
+              caution:{bg:"#1a0d00",border:"#3a1a00",icon:"💸",text:"#fb923c"},
+              info:{bg:C.surface2,border:C.border,icon:"💡",text:C.textSecondary},
+            };
+            const style = alertStyles[alert.severity] || alertStyles.info;
+            return <div key={`${alert.type}-${index}`} style={{background:style.bg,border:`1px solid ${style.border}`,borderRadius:10,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
+              <span style={{fontSize:16,flexShrink:0}}>{style.icon}</span>
+              <div><div style={{fontSize:12,fontWeight:600,color:style.text,marginBottom:2}}>{alert.title}</div><div style={{fontSize:12,color:C.textSecondary,lineHeight:1.5}}>{alert.message}</div>{alert.metric && <div style={{fontSize:11,color:C.textMuted,marginTop:4,fontFamily:"Space Grotesk"}}>{alert.metric}</div>}</div>
+            </div>;
           })}
         </div>
       )}
-
-      {/* 2-col stat cards */}
-      <div className="home-grid">
-        <div className="card" style={{border:`1px solid ${C.border}`}}>
-          <div className="card-label">{t.todayRevenue}</div>
-          <div className="card-value">{fmt(total,currency)}</div>
+      <div className="card" style={{background:`linear-gradient(135deg,${C.surface},${C.surface2})`,border:`1px solid ${C.border}`}}>
+        <div className="card-label">{t.todayRevenue}</div>
+        <div className="card-value">{fmt(total,currency)}</div>
+      </div>
+      <div className="card" style={{background:`linear-gradient(135deg,${C.surface},${C.surface2})`,border:`1px solid ${C.border}`}}>
+        <div className="card-label">{t.todayProfit}</div>
+        <div className="card-value green">{fmt(profit,currency)}</div>
+        <div className="card-sub">
+          <span>Revenue: <b style={{color:C.greenText}}>{fmt(total,currency)}</b></span>
+          <span>— Expenses: <b style={{color:C.redText}}>{fmt(expenses,currency)}</b></span>
         </div>
-        <div className="card" style={{border:`1px solid ${C.border}`}}>
-          <div className="card-label">{t.todayProfit}</div>
-          <div className="card-value green">{fmt(profit,currency)}</div>
-          {expenses > 0 && <div className="card-sub" style={{marginTop:6,fontSize:11}}>After {fmt(expenses,currency)} expenses</div>}
-        </div>
-
-        {/* Weekly revenue sparkline */}
-        <div className="card">
-          <div className="card-label" style={{marginBottom:8}}>{t.weeklyRevenue}</div>
-          {weekly.length === 0 ? (
-            <div style={{fontSize:12,color:C.textMuted,marginTop:8}}>No sales yet this week.</div>
-          ) : (
-            <>
-              <LineChart data={weekly.map(w=>w.total)}/>
-              <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-                <span style={{fontSize:9,color:C.textMuted}}>{weekly.length > 0 ? new Date(weekly[0].date).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}) : ""}</span>
-                <span style={{fontSize:9,color:C.textMuted}}>Today</span>
+      </div>
+      <div className="card">
+        <div className="card-label">{t.weeklyRevenue}</div>
+        {weekly.length === 0 ? (
+          <div style={{fontSize:12,color:C.textMuted,marginTop:8}}>No sales yet this week.</div>
+        ) : (
+          <div className="chart-bars">
+            {weekly.map((w,i) => (
+              <div className="chart-col" key={i}>
+                <div className="chart-bar today" style={{height:`${Math.max(4,(w.total/maxWeekly)*100)}%`}}/>
+                <div className="chart-day">{new Date(w.date).toLocaleDateString(undefined,{weekday:"short"})}</div>
               </div>
-            </>
-          )}
-        </div>
-
-        {/* Sales channels */}
-        <div className="card">
-          <div className="card-label" style={{marginBottom:10}}>Sales Channels</div>
-          {channelList.length === 0 ? (
-            <div style={{fontSize:12,color:C.textMuted}}>No sales yet.</div>
-          ) : channelList.map(ch => (
-            <div key={ch.name} style={{marginBottom:8}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                <span style={{fontSize:11,color:C.textSecondary,textTransform:"capitalize"}}>{ch.name}</span>
-                <span style={{fontSize:11,color:ch.color,fontWeight:600}}>{ch.pct}%</span>
-              </div>
-              <div style={{height:4,background:C.surface2,borderRadius:2,overflow:"hidden"}}>
-                <div style={{height:"100%",width:`${ch.pct}%`,background:ch.color,borderRadius:2}}/>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Recent sales — full width */}
-        <div className="card home-grid-full">
-          <div className="section-row">
-            <div className="section-title">{t.recentSales}</div>
+            ))}
           </div>
-          {recentSales.length === 0 ? (
-            <div className="empty-state"><div className="empty-icon">📭</div><div className="empty-text">No sales logged yet. Go to Log Sale to add your first one.</div></div>
-          ) : recentSales.map(s => (
-            <div className="sale-item" key={s.id}>
-              <div style={{display:"flex",gap:10,alignItems:"center"}}>
-                <div style={{width:32,height:32,borderRadius:"50%",background:C.surface2,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:C.gold,flexShrink:0}}>
-                  {(s.customer_name||"C")[0].toUpperCase()}
-                </div>
-                <div className="sale-info">
-                  <div className="sale-name">{s.customer_name || "Customer"}</div>
-                  <div className="sale-meta">{(s.products||[]).map(p=>p.name).join(", ")}</div>
-                  <ChannelBadge ch={s.channel}/>
-                </div>
-              </div>
-              <div style={{textAlign:"right"}}>
-                <div className="sale-amount">{fmt(s.order_total||0,currency)}</div>
-                <div style={{fontSize:10,color:s.payment_status==="paid"?C.greenText:C.textMuted,marginTop:2}}>{s.payment_status}</div>
-              </div>
-            </div>
-          ))}
+        )}
+      </div>
+      <div className="card">
+        <div className="section-row">
+          <div className="section-title">{t.recentSales}</div>
         </div>
+        {recentSales.length === 0 ? (
+          <div className="empty-state"><div className="empty-icon">📭</div><div className="empty-text">No sales logged yet. Go to Log Sale to add your first one.</div></div>
+        ) : recentSales.map(s => (
+          <div className="sale-item" key={s.id}>
+            <div className="sale-info">
+              <div className="sale-name">{s.customer_name || "Customer"}</div>
+              <div className="sale-meta">{(s.products||[]).map(p=>p.name).join(", ")}</div>
+              <ChannelBadge ch={s.channel}/>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div className="sale-amount">{fmt(s.order_total||0,currency)}</div>
+              <div style={{fontSize:10,color:s.payment_status==="paid"?C.greenText:C.textMuted,marginTop:2}}>{s.payment_status}</div>
+            </div>
+          </div>
+        ))}
       </div>
     </>
   );
@@ -1329,7 +1191,7 @@ function QuickForm({ t, currency, shopId, onDone }) {
           </select>
         </div>
       </div>
-      <button className="btn-primary" style={{marginTop:8}} onClick={handleSubmit} disabled={!form.product||!form.price||submitting}>
+      <button className="btn-primary" onClick={handleSubmit} disabled={!form.product||!form.price||submitting}>
         {submitting ? "Saving..." : t.logSaleBtn}
       </button>
     </div>
@@ -1545,9 +1407,9 @@ function Inventory({ t, currency, shopId, refreshKey, onChanged }) {
 }
 
 function Customers({ t, currency, shopId, refreshKey }) {
-  const [sales, setSales]       = useState([]);
+  const [sales, setSales] = useState([]);
   const [segments, setSegments] = useState(null);
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!shopId) return;
@@ -1590,62 +1452,16 @@ function Customers({ t, currency, shopId, refreshKey }) {
 
   return (
     <>
-      {/* ── AI Segment Insights ── */}
-      {segments?.enough_data && segments.insights?.length > 0 && (
-        <div style={{display:"flex",flexDirection:"column",gap:6}}>
-          {segments.insights.map((insight, i) => (
-            <div key={i} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",fontSize:12,color:C.textSecondary,borderLeft:`3px solid ${C.gold}`}}>
-              💡 {insight}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Customer Segments ── */}
       {segments?.enough_data && (
-        <div className="card">
-          <div className="section-row" style={{marginBottom:12}}>
-            <div className="section-title">Customer Segments ({segments.total_customers})</div>
+        <>
+          {segments.insights?.length > 0 && <div style={{display:"flex",flexDirection:"column",gap:6}}>{segments.insights.map((insight,index) => <div key={index} style={{background:C.surface2,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.gold}`,borderRadius:10,padding:"10px 14px",fontSize:12,color:C.textSecondary}}>💡 {insight}</div>)}</div>}
+          <div className="card">
+            <div className="section-row"><div className="section-title">Customer Segments ({segments.total_customers})</div></div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>{Object.entries(segments.segment_counts || {}).map(([segment,count]) => { const item = segments.segments?.find(s => s.segment === segment); return <span key={segment} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:20,padding:"4px 10px",fontSize:11,color:item?.color || C.textSecondary,fontWeight:600}}>{item?.emoji} {segment} ({count})</span>; })}</div>
+            {segments.segments?.map((segment,index) => <div key={`${segment.customer}-${index}`} style={{padding:"10px 0",borderBottom:index < segments.segments.length - 1 ? `1px solid ${C.border}` : "none"}}><div style={{display:"flex",alignItems:"center",gap:10}}><div className="avatar" style={{borderColor:segment.color}}>{segment.emoji}</div><div style={{flex:1}}><div style={{display:"flex",justifyContent:"space-between",gap:8}}><span className="returning-name">{segment.customer}</span><span className="returning-amount">{fmt(segment.monetary,currency)}</span></div><div style={{fontSize:10,color:segment.color,marginTop:3}}>{segment.segment} · {segment.frequency} order{segment.frequency > 1 ? "s" : ""} · last {segment.recency_days}d ago</div></div></div><div style={{marginLeft:42,fontSize:11,color:C.textMuted,marginTop:5}}>{segment.action}</div></div>)}
           </div>
-          {/* Segment summary pills */}
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
-            {Object.entries(segments.segment_counts || {}).map(([seg, count]) => {
-              const segData = segments.segments?.find(s => s.segment === seg);
-              return (
-                <div key={seg} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:20,padding:"4px 12px",fontSize:11,color:segData?.color||C.textSecondary,fontWeight:600}}>
-                  {segData?.emoji} {seg} ({count})
-                </div>
-              );
-            })}
-          </div>
-          {/* Per-customer rows */}
-          {segments.segments?.map((s, i) => (
-            <div key={i} style={{padding:"12px 0",borderBottom:`1px solid ${C.border}`}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
-                <div style={{width:36,height:36,borderRadius:"50%",background:C.surface2,border:`2px solid ${s.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>
-                  {s.emoji}
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div style={{fontSize:13,fontWeight:600,color:C.textPrimary}}>{s.customer}</div>
-                    <div style={{fontSize:13,fontWeight:600,color:C.greenText,fontFamily:"'Space Grotesk',sans-serif"}}>{fmt(s.monetary,currency)}</div>
-                  </div>
-                  <div style={{display:"flex",gap:8,marginTop:3,alignItems:"center",flexWrap:"wrap"}}>
-                    <span style={{fontSize:10,padding:"2px 8px",borderRadius:20,background:C.surface2,color:s.color,fontWeight:600,border:`1px solid ${s.color}40`}}>{s.segment}</span>
-                    <span style={{fontSize:10,color:C.textMuted}}>{s.frequency} order{s.frequency>1?"s":""} · last {s.recency_days}d ago</span>
-                  </div>
-                </div>
-              </div>
-              <div style={{marginLeft:46,fontSize:11,color:C.textMuted,lineHeight:1.5}}>
-                <span style={{color:C.textSecondary}}>{s.description}</span>
-                {" · "}
-                <span style={{color:C.gold,fontStyle:"italic"}}>{s.action}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        </>
       )}
-
       <div className="card">
         <div className="card-label" style={{marginBottom:12}}>{t.salesByChannel}</div>
         {channels.length === 0 ? (
@@ -1690,23 +1506,15 @@ function Customers({ t, currency, shopId, refreshKey }) {
 }
 
 function Reports({ t, currency, shopId, refreshKey }) {
-  const [data, setData]             = useState(null);
-  const [forecastData, setForecastData] = useState(null);
-  const [loading, setLoading]       = useState(true);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!shopId) return;
     setLoading(true);
-    // Fetch analytics and forecast independently so a forecast 500 never
-    // blocks the analytics data from displaying.
-    Promise.all([
-      apiGet(`/analytics/${shopId}`).catch(() => null),
-      apiGet(`/forecast/${shopId}?periods=14`).catch(() => null),
-    ])
-      .then(([analyticsResult, forecastResult]) => {
-        if (analyticsResult) setData(analyticsResult);
-        if (forecastResult) setForecastData(forecastResult);
-      })
+    apiGet(`/analytics/${shopId}`)
+      .then(setData)
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, [shopId, refreshKey]);
 
@@ -1738,33 +1546,17 @@ function Reports({ t, currency, shopId, refreshKey }) {
         </div>
       </div>
       <div className="card">
-        <div className="card-label" style={{marginBottom:4}}>{t.dailyTrend} <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>(last 7 days + 14-day forecast)</span></div>
-        {forecastData?.summary && (
-          <div style={{fontSize:12,color:C.textSecondary,marginBottom:12,padding:"8px 12px",background:C.surface2,borderRadius:8,borderLeft:`3px solid ${C.gold}`}}>
-            🔮 {forecastData.summary}
-          </div>
-        )}
+        <div className="card-label" style={{marginBottom:8}}>{t.dailyTrend} <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>(last 7 days)</span></div>
         {weekly.length === 0 ? (
           <div style={{fontSize:12,color:C.textMuted}}>No sales recorded yet.</div>
         ) : (
           <>
-            <ForecastChart
-              history={forecastData?.history || weekly.map(w => ({date:w.date, actual:w.total}))}
-              forecast={forecastData?.forecast || []}
-            />
+            <LineChart data={lineData}/>
             <div style={{display:"flex",gap:16,marginTop:8}}>
               <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.textSecondary}}>
-                <div style={{width:20,height:2,background:C.gold,borderRadius:1}}/> Actual
+                <div style={{width:20,height:2,background:C.gold,borderRadius:1}}/> Revenue
               </div>
-              {(forecastData?.forecast?.length > 0) && (
-                <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.textSecondary}}>
-                  <div style={{width:20,height:2,borderTop:`2px dashed ${C.gold}`,opacity:0.6}}/> Forecast
-                </div>
-              )}
             </div>
-            {!forecastData?.enough_data && (
-              <div style={{fontSize:11,color:C.textMuted,marginTop:8}}>Keep logging sales to unlock revenue forecasting.</div>
-            )}
           </>
         )}
       </div>
@@ -1873,7 +1665,7 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
   );
 }
 
-function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic, onSave, onOpenProfile, onClose, onLogout }) {
+function Settings({ t, lang, currency, bizName, ownerName, theme, onThemeChange, profilePic, onSave, onOpenProfile, onClose, onLogout }) {
   const [selLang, setSelLang] = useState(lang);
   const [selCurrency, setSelCurrency] = useState(currency);
   const [name, setName] = useState(bizName);
@@ -1887,7 +1679,7 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic
       <div className="settings-panel">
         <div className="settings-panel-head"><div className="settings-panel-title">Account</div><div className="settings-panel-copy">Your personal account and business identity.</div></div>
         <div className="settings-profile-link" onClick={onOpenProfile}>
-          <div className="settings-avatar">{profilePic ? <img src={profilePic} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (bizName?.[0] || "V")}</div>
+          <div className="settings-avatar"><OwnerAvatar profilePic={profilePic} ownerName={ownerName}/></div>
           <div className="settings-profile-copy"><div className="settings-profile-name">My Profile</div><div className="settings-profile-meta">Update your name, photo, contact details and bio</div></div>
           <div className="settings-chevron">›</div>
         </div>
@@ -1933,16 +1725,46 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic
           <button className="btn-primary" onClick={()=>onSave({lang:selLang,currency:selCurrency,bizName:name})}>
         {t.saveSettings}
           </button>
+          <button className="btn-secondary" onClick={onLogout}>Log out</button>
         </div>
       </div>
-      <button
-        onClick={onLogout}
-        style={{marginTop:8,background:"transparent",border:`1px solid ${C.redText}`,borderRadius:10,padding:"12px 20px",fontSize:13,fontWeight:600,color:C.redText,cursor:"pointer",width:"100%",fontFamily:"'Inter',sans-serif",transition:"background 0.15s"}}
-        onMouseOver={e=>e.currentTarget.style.background=C.red}
-        onMouseOut={e=>e.currentTarget.style.background="transparent"}
-      >
-        🚪 Log out
-      </button>
+    </div>
+  );
+}
+
+function Notifications({ shopId, aiUpdates, onClose }) {
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    if (!shopId) return;
+    apiGet(`/analytics/${shopId}`)
+      .then(analytics => {
+        const next = [];
+        if (!(analytics?.today_revenue > 0)) {
+          next.push({ key:"quiet-day", text:"Nothing has been logged for today yet." });
+        }
+        const revenue = analytics?.today_revenue || 0;
+        const expenses = analytics?.today_expenses || 0;
+        if (expenses > 0 && (revenue === 0 || expenses > revenue * 0.3)) {
+          next.push({ key:"high-expenses", text:"Today’s expenses look high compared with today’s revenue." });
+        }
+        if (aiUpdates > 0) {
+          next.push({ key:"ai-update", text:"VeeVak AI recently added new business data." });
+        }
+        setItems(next);
+      })
+      .catch(() => setItems(aiUpdates > 0 ? [{ key:"ai-update", text:"VeeVak AI recently added new business data." }] : []));
+  }, [shopId, aiUpdates]);
+
+  return (
+    <div className="notification-menu" role="dialog" aria-label="Notifications">
+      <div className="notification-head">
+        <div className="notification-title">Notifications</div>
+        <button className="modal-close" aria-label="Close notifications" onClick={onClose}>×</button>
+      </div>
+      {items.length === 0
+        ? <div style={{fontSize:12,color:C.textMuted,padding:"10px 0"}}>You’re all caught up.</div>
+        : items.map(item => <div className="notification-item" key={item.key}><span className="notification-dot"/><span>{item.text}</span></div>)}
     </div>
   );
 }
@@ -2024,7 +1846,7 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
     <>
       {open && <div className="assistant-panel">
         <div className="assistant-head">
-          <div className="settings-avatar" style={{width:36,height:36,padding:4,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="28" height="24" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill={C.gold} fillRule="evenodd"/></svg></div>
+          <div className="settings-avatar" style={{width:36,height:36,padding:7}}><svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill={C.gold}/></svg></div>
           <div className="assistant-head-copy"><div className="assistant-title">VeeVak Assistant</div><div className="assistant-status">Sales, expenses, inventory and business answers</div></div>
           <button className="assistant-close" aria-label="Close assistant" onClick={()=>setOpen(false)}>×</button>
         </div>
@@ -2040,8 +1862,10 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
         </div>
         <div className="assistant-hint">Enter adds a new line. Ctrl+Enter sends.</div>
       </div>}
-      <button className="assistant-launcher" style={{...(position ? {left:position.left,top:position.top,right:"auto",bottom:"auto"} : undefined), background:`linear-gradient(135deg,${C.gold},${C.goldDim})`}} aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onPointerDown={startDragging} onClick={()=>{if(draggedRef.current){draggedRef.current=false;return;}setOpen(value=>!value);}}>
-        {open ? <span style={{fontSize:22,color:"#fff",lineHeight:1}}>×</span> : <svg width="26" height="22" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#fff" fillRule="evenodd"/></svg>}
+      <button className="assistant-launcher" style={position ? {left:position.left,top:position.top,right:"auto",bottom:"auto"} : undefined} aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onPointerDown={startDragging} onClick={()=>{if(draggedRef.current){draggedRef.current=false;return;}setOpen(value=>!value);}}>
+        {open ? "×" : <svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill="#001819"/>
+        </svg>}
       </button>
     </>
   );
@@ -2061,11 +1885,8 @@ const NAV = [
 
 export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
-  const [showLanding, setShowLanding] = useState(() => !localStorage.getItem("veevak_token"));
-  const [loginDirect, setLoginDirect] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [config, setConfig] = useState({lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""});
   const [sellerId, setSellerId] = useState(null);
@@ -2078,6 +1899,7 @@ export default function App() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [theme, setTheme] = useState(() => localStorage.getItem("veevak_theme") || "dark");
   const [profilePic, setProfilePic] = useState(() => localStorage.getItem("veevak_profile_pic") || "");
+  const [aiUpdates, setAiUpdates] = useState(0);
 
   C = THEMES[theme] || THEMES.dark;
   const styles = makeStyles(C);
@@ -2133,7 +1955,6 @@ function confirmLogout() {
   setShops([]);
   setActiveShopId(null);
   setShowLogoutConfirm(false);
-  setShowLanding(true);
 }
 
   async function handleAddShop() {
@@ -2167,10 +1988,65 @@ function confirmLogout() {
       <style>{styles}</style>
       <div className="onboard">
         <div className="onboard-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <svg width="48" height="41" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-label="VeeVak">
-            <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill={C.gold} fillRule="evenodd"/>
-          </svg>
-        </div>
+  <svg
+  width="20"
+  height="20"
+  viewBox="0 0 100 80"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path
+    d="
+      M8 8
+      H32
+      L50 33
+      L68 8
+      H92
+      V55
+      L78 70
+      H62
+      L50 53
+      L38 70
+      H22
+      L8 55
+      Z
+    "
+    fill="#000000"
+  />
+
+  <path
+    d="
+      M22 18
+      V48
+      L34 58
+      L43 40
+      Z
+    "
+    fill={C.gold}
+  />
+
+  <path
+    d="
+      M78 18
+      V48
+      L66 58
+      L57 40
+      Z
+    "
+    fill={C.gold}
+  />
+
+  <path
+    d="
+      M40 22
+      L50 36
+      L60 22
+      L50 48
+      Z
+    "
+    fill={C.gold}
+  />
+</svg>
+</div>
         <div className="onboard-sub">Loading...</div>
       </div>
     </>
@@ -2179,17 +2055,7 @@ function confirmLogout() {
   if (!onboarded) return (
     <>
       <style>{styles}</style>
-      {showLanding
-        ? <Landing
-            onGetStarted={() => { setLoginDirect(false); setShowLanding(false); }}
-            onLogin={() => { setLoginDirect(true); setShowLanding(false); }}
-            onShowPrivacy={() => setShowPrivacy(true)}
-            onShowTerms={() => setShowTerms(true)}
-          />
-        : <Onboarding onComplete={handleOnboardComplete} startOnLogin={loginDirect} onBackToLanding={() => setShowLanding(true)}/>
-      }
-      {showPrivacy && <Privacy onClose={() => setShowPrivacy(false)} />}
-      {showTerms && <Terms onClose={() => setShowTerms(false)} />}
+      <Onboarding onComplete={handleOnboardComplete}/>
     </>
   );
 
@@ -2200,109 +2066,143 @@ function confirmLogout() {
     inventory: <Inventory t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey} onChanged={triggerRefresh}/>,
     customers: <Customers t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
     reports:   <Reports t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
-    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")} onClose={()=>setTab("home")} onLogout={handleLogout}/>,
+    settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} ownerName={config.ownerName} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")} onClose={()=>setTab("home")} onLogout={handleLogout}/>,
     profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("settings")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
-  };
-
-  // Sidebar nav icons (SVG for crisp rendering)
-  const SIDEBAR_ICONS = {
-    home:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
-    sale:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>,
-    expenses:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>,
-    inventory: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg>,
-    customers: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
-    reports:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
   };
 
   return (
     <>
       <style>{styles}</style>
       <div className="app">
+        <div className="topbar">
+          <div className="topbar-brand">
+            <div className="brand-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+  <svg
+  width="20"
+  height="20"
+  viewBox="0 0 100 80"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path
+    d="
+      M8 8
+      H32
+      L50 33
+      L68 8
+      H92
+      V55
+      L78 70
+      H62
+      L50 53
+      L38 70
+      H22
+      L8 55
+      Z
+    "
+    fill="#000000"
+  />
 
-        {/* ── DESKTOP SIDEBAR ── */}
-        <aside className="app-sidebar">
-          <div className="sidebar-logo">
-            <svg width="20" height="17" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#000" fillRule="evenodd"/>
-            </svg>
-          </div>
-          {NAV.map(n => (
-            <button key={n.key} className={`sidebar-item ${tab===n.key?"active":""}`} onClick={()=>setTab(n.key)} title={n.label} aria-label={n.label}>
-              {SIDEBAR_ICONS[n.key] || n.icon}
-            </button>
-          ))}
-          <div className="sidebar-bottom">
-            <button className="sidebar-item" onClick={()=>handleThemeChange(theme==="dark"?"light":"dark")} title="Toggle theme" style={{fontSize:16}}>
-              {theme==="dark" ? "☀️" : "🌙"}
-            </button>
-            <button className="sidebar-item" onClick={()=>setTab("settings")} title="Settings">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-            </button>
-          </div>
-        </aside>
+  <path
+    d="
+      M22 18
+      V48
+      L34 58
+      L43 40
+      Z
+    "
+    fill={C.gold}
+  />
 
-        {/* ── MAIN BODY (topbar + content) ── */}
-        <div className="app-body">
-          <div className="topbar">
-            <div className="topbar-brand">
-              <div className="brand-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <svg width="20" height="17" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#000" fillRule="evenodd"/>
-                </svg>
-              </div>
-              <div>
-                <div className="brand-name">VeeVak</div>
-                <div className="brand-sub">AI sales clarity</div>
-              </div>
-            </div>
-            <div className="topbar-actions">
-              <button className="btn-ghost" aria-label="Toggle theme" title={theme==="dark"?"Switch to light":"Switch to dark"} onClick={()=>handleThemeChange(theme==="dark"?"light":"dark")} style={{fontSize:16,padding:"6px 9px"}}>
-                {theme==="dark" ? "☀️" : "🌙"}
-              </button>
-              <button className="btn-ghost" onClick={()=>setTab("settings")}>⚙ {t.settings}</button>
-              <div className="shop-selector" onClick={()=>setShopOpen(o=>!o)}>
-                <span>🏪</span>
-                <span style={{maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeShop?.name || "Select shop"}</span>
-                <span style={{fontSize:10}}>▾</span>
-                {shopOpen && (
-                  <div className="shop-dropdown" onClick={e=>e.stopPropagation()}>
-                    {shops.map(s=>(
-                      <div key={s.id} className={`shop-option ${activeShopId===s.id?"active":""}`}
-                        onClick={()=>{setActiveShopId(s.id);setShopOpen(false);}}>
-                        {s.name}
-                      </div>
-                    ))}
-                    <div className="divider"/>
-                    {!addingShop ? (
-                      <div className="shop-option" style={{color:C.gold,fontWeight:600}} onClick={()=>setAddingShop(true)}>
-                        + Add new shop
-                      </div>
-                    ) : (
-                      <div style={{padding:"8px 12px",display:"flex",gap:6}}>
-                        <input autoFocus className="form-input" style={{fontSize:12,padding:"6px 8px"}} placeholder="Shop name"
-                          value={newShopName} onChange={e=>setNewShopName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAddShop()}/>
-                        <button className="btn-send" style={{width:32,height:32,fontSize:13}} onClick={handleAddShop}>✓</button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+  <path
+    d="
+      M78 18
+      V48
+      L66 58
+      L57 40
+      Z
+    "
+    fill={C.gold}
+  />
+
+  <path
+    d="
+      M40 22
+      L50 36
+      L60 22
+      L50 48
+      Z
+    "
+    fill={C.gold}
+  />
+</svg>
+</div>
+            <div>
+              <div className="brand-name">VeeVak</div>
+              <div className="brand-sub">AI sales clarity</div>
             </div>
           </div>
-
-          <div className="page-content">{pages[tab]}</div>
-
-          <nav className="bottom-nav">
-            {NAV.map(n=>(
-              <button key={n.key} className={`nav-item ${tab===n.key?"active":""}`} onClick={()=>setTab(n.key)}>
-                <span className="nav-icon">{n.icon}</span>
-                {n.label}
+          <div className="topbar-actions">
+            <div className="notification-wrap">
+              <button className="notification-button" aria-label="Open notifications" onClick={()=>setNotificationsOpen(value=>!value)}>
+                ♢
+                <span className="notification-count">!</span>
               </button>
-            ))}
-          </nav>
+              {notificationsOpen && <Notifications shopId={activeShopId} aiUpdates={aiUpdates} onClose={()=>setNotificationsOpen(false)}/>}
+            </div>
+            <button className="btn-ghost" onClick={()=>setTab("settings")}>🙂 Me</button>
+            <div className="shop-selector" onClick={()=>setShopOpen(o=>!o)}>
+              <span>🏪</span>
+              <span style={{maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeShop?.name || "Select shop"}</span>
+              <span style={{fontSize:10}}>▾</span>
+              {shopOpen && (
+                <div className="shop-dropdown" onClick={e=>e.stopPropagation()}>
+                  {shops.map(s=>(
+                    <div key={s.id} className={`shop-option ${activeShopId===s.id?"active":""}`}
+                      onClick={()=>{setActiveShopId(s.id);setShopOpen(false);}}>
+                      {s.name}
+                    </div>
+                  ))}
+                  <div className="divider"/>
+                  {!addingShop ? (
+                    <div className="shop-option" style={{color:C.gold,fontWeight:600}} onClick={()=>setAddingShop(true)}>
+                      + Add new shop
+                    </div>
+                  ) : (
+                    <div style={{padding:"8px 12px",display:"flex",gap:6}}>
+                      <input
+                        autoFocus
+                        className="form-input"
+                        style={{fontSize:12,padding:"6px 8px"}}
+                        placeholder="Shop name"
+                        value={newShopName}
+                        onChange={e=>setNewShopName(e.target.value)}
+                        onKeyDown={e=>e.key==="Enter"&&handleAddShop()}
+                      />
+                      <button className="btn-send" style={{width:32,height:32,fontSize:13}} onClick={handleAddShop}>✓</button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <FloatingAssistant shopId={activeShopId} shopName={activeShop?.name||""} currency={config.currency} onChanged={triggerRefresh}/>
+        <div className="page-content">{pages[tab]}</div>
+
+        <nav className="bottom-nav">
+          <button className="rail-profile" aria-label="Open profile" onClick={()=>setTab("profile")}>
+            <span className="rail-profile-avatar"><OwnerAvatar profilePic={profilePic} ownerName={config.ownerName}/></span>
+            <span className="rail-profile-label">Profile</span>
+          </button>
+          {NAV.map(n=>(
+            <button key={n.key} className={`nav-item ${tab===n.key?"active":""}`} onClick={()=>setTab(n.key)}>
+              <span className="nav-icon">{n.icon}</span>
+              {n.label}
+            </button>
+          ))}
+        </nav>
+
+        <FloatingAssistant shopId={activeShopId} shopName={activeShop?.name||""} currency={config.currency} onChanged={()=>{setAiUpdates(value=>value+1);triggerRefresh();}}/>
 
         {showLogoutConfirm && (
           <div className="modal-overlay" onClick={()=>setShowLogoutConfirm(false)}>
