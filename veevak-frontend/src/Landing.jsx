@@ -620,7 +620,7 @@ function useScrollReveal() {
 }
 
 // ── Main Landing component ─────────────────────────────────────────────
-export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTerms }) {
+export default function Landing({ onShowPrivacy, onShowTerms }) {
   const [navScrolled, setNavScrolled] = useState(false);
   const [isMobile, setIsMobile]       = useState(window.innerWidth < 900);
   useScrollReveal();
@@ -634,7 +634,7 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
   }, []);
 
   function scrollTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }
-  const handleLogin = onLogin || onGetStarted;
+  function openAuth(mode) { window.open(`/?auth=${mode}`, "_blank", "noopener,noreferrer"); }
 
   const W   = { maxWidth: 1080, margin: "0 auto", padding: "0 28px" };
   const sec = (bg = L.bg) => ({ background: bg });
@@ -740,12 +740,12 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {!isMobile && (
               <>
-                <button onClick={handleLogin} className="l-btn-ghost">Log In</button>
-                <button onClick={onGetStarted} className="l-btn-accent">Get Started Free</button>
+                <button onClick={() => openAuth("login")} className="l-btn-ghost">Log In</button>
+                <button onClick={() => openAuth("signup")} className="l-btn-accent">Get Started Free</button>
                 <button onClick={() => scrollTo("footer")} className="l-btn-primary" style={{ padding: "8px 18px", fontSize: 13 }}>Contact Us</button>
               </>
             )}
-            {isMobile && <MobileMenu onGetStarted={onGetStarted} onLogin={handleLogin} scrollTo={scrollTo} />}
+            {isMobile && <MobileMenu onGetStarted={() => openAuth("signup")} onLogin={() => openAuth("login")} scrollTo={scrollTo} />}
           </div>
         </div>
       </nav>
@@ -760,8 +760,8 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
             Turn WhatsApp, Instagram, Facebook, TikTok, and offline sales into clear business insights — no spreadsheets, no stress.
           </p>
           <div className="l-hero-cta" style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "center", marginBottom: 56 }}>
-            <button onClick={onGetStarted} className="l-btn-primary" style={{ fontSize: 16, padding: "15px 34px" }}>Get Started Free →</button>
-            <button onClick={handleLogin} className="l-btn-outline" style={{ fontSize: 16, padding: "15px 34px" }}>Already have an account? Log In</button>
+            <button onClick={() => openAuth("signup")} className="l-btn-primary" style={{ fontSize: 16, padding: "15px 34px" }}>Get Started Free →</button>
+            <button onClick={() => openAuth("login")} className="l-btn-outline" style={{ fontSize: 16, padding: "15px 34px" }}>Already have an account? Log In</button>
           </div>
           <div className="l-hero-img" style={{ borderRadius: 18, overflow: "hidden", maxWidth: 760, marginInline: "auto", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", marginBottom: 44 }}>
             <img src={heroIllustration} alt="VeeVak dashboard" style={{ width: "100%", display: "block" }} />
@@ -940,8 +940,8 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
             Every small business deserves to understand its own performance. Start for free — no credit card, no setup, no jargon.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "center" }}>
-            <button onClick={onGetStarted} className="l-btn-primary" style={{ fontSize: 16, padding: "16px 36px" }}>Get Started Free →</button>
-            <button onClick={handleLogin} className="l-btn-outline" style={{ fontSize: 16, padding: "16px 36px", borderColor: "rgba(255,255,255,0.25)", color: "rgba(232,230,255,0.8)" }}>Already have an account? Log In</button>
+            <button onClick={() => openAuth("signup")} className="l-btn-primary" style={{ fontSize: 16, padding: "16px 36px" }}>Get Started Free →</button>
+            <button onClick={() => openAuth("login")} className="l-btn-outline" style={{ fontSize: 16, padding: "16px 36px", borderColor: "rgba(255,255,255,0.25)", color: "rgba(232,230,255,0.8)" }}>Already have an account? Log In</button>
           </div>
         </div>
       </section>
@@ -991,7 +991,7 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
               <p style={{ margin: "0 0 16px", fontSize: 11, fontWeight: 700, color: L.textMuted, textTransform: "uppercase", letterSpacing: "0.09em" }}>Product</p>
               <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
                 {["Dashboard","Log Sale","Expenses","Inventory","Reports","AI Assistant"].map(p => (
-                  <li key={p}><button onClick={onGetStarted} className="l-navlink" style={{ background: "none", border: "none", padding: 0, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>{p}</button></li>
+                  <li key={p}><button onClick={() => openAuth("signup")} className="l-navlink" style={{ background: "none", border: "none", padding: 0, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>{p}</button></li>
                 ))}
               </ul>
             </div>

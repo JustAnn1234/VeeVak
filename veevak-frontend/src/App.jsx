@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import Landing from "./Landing";
 import Privacy from "./Privacy";
 import Terms from "./Terms";
+import BlogPost from "./BlogPost";
 
 // ── API configuration ───────────────────────────────────────────────
 const API_BASE = "https://veevak-backend.onrender.com";
@@ -1731,6 +1732,7 @@ function Customers({ t, currency, shopId, refreshKey }) {
 function Reports({ t, currency, shopId, refreshKey }) {
   const [data, setData]             = useState(null);
   const [forecastData, setForecastData] = useState(null);
+  const [associations, setAssociations] = useState(null);
   const [loading, setLoading]       = useState(true);
 
   useEffect(() => {
@@ -1741,10 +1743,12 @@ function Reports({ t, currency, shopId, refreshKey }) {
     Promise.all([
       apiGet(`/analytics/${shopId}`).catch(() => null),
       apiGet(`/forecast/${shopId}?periods=14`).catch(() => null),
+      apiGet(`/associations/${shopId}`).catch(() => null),
     ])
-      .then(([analyticsResult, forecastResult]) => {
+      .then(([analyticsResult, forecastResult, associationResult]) => {
         if (analyticsResult) setData(analyticsResult);
         if (forecastResult) setForecastData(forecastResult);
+        if (associationResult) setAssociations(associationResult);
       })
       .finally(() => setLoading(false));
   }, [shopId, refreshKey]);
@@ -1818,6 +1822,49 @@ function Reports({ t, currency, shopId, refreshKey }) {
           </div>
         ))}
       </div>
+      {associations?.enough_data && (
+        <div className="card">
+          <div className="card-label" style={{marginBottom:12}}>Product Intelligence</div>
+
+          {associations.bundles?.length > 0 && (
+            <>
+              <div style={{fontSize:12,color:C.textSecondary,fontWeight:600,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.08em"}}>
+                Bundle Opportunities
+              </div>
+              {associations.bundles.map((bundle, i) => (
+                <div key={i} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",marginBottom:8}}>
+                  <div style={{display:"flex",gap:8,marginBottom:6,flexWrap:"wrap"}}>
+                    {bundle.products.map((product, j) => (
+                      <span key={j} style={{background:C.surface,border:`1px solid ${C.gold}40`,borderRadius:20,padding:"3px 10px",fontSize:11,color:C.gold,fontWeight:600}}>
+                        {product}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{fontSize:12,color:C.textSecondary,lineHeight:1.5}}>{bundle.suggestion}</div>
+                  {bundle.lift > 0 && <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>{bundle.lift}x more likely than random chance</div>}
+                </div>
+              ))}
+            </>
+          )}
+
+          {associations.rules?.length > 0 && (
+            <>
+              <div style={{height:1,background:C.border,margin:"12px 0"}}/>
+              <div style={{fontSize:12,color:C.textSecondary,fontWeight:600,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.08em"}}>
+                What sells together
+              </div>
+              {associations.rules.slice(0, 5).map((rule, i) => (
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+                  <div style={{flex:1,fontSize:12,color:C.textSecondary,paddingRight:12}}>{rule.plain_english}</div>
+                  <div style={{fontSize:11,color:C.gold,fontFamily:"Space Grotesk",fontWeight:600,flexShrink:0}}>{Math.round(rule.confidence * 100)}%</div>
+                </div>
+              ))}
+            </>
+          )}
+
+          {associations.note && <div style={{fontSize:12,color:C.textMuted,fontStyle:"italic",marginTop:8}}>{associations.note}</div>}
+        </div>
+      )}
     </>
   );
 }
@@ -2170,6 +2217,8 @@ const NAV = [
 ];
 
 export default function App() {
+  const blogMatch = window.location.pathname.match(/^\/blog\/([^/]+)\/?$/);
+  const authMode = new URLSearchParams(window.location.search).get("auth");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
@@ -2177,7 +2226,7 @@ export default function App() {
   const [loginDirect, setLoginDirect] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(!blogMatch && !authMode);
   const [config, setConfig] = useState({lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""});
   const [sellerId, setSellerId] = useState(null);
   const [shops, setShops] = useState([]); // [{id, name}]
@@ -2199,6 +2248,7 @@ export default function App() {
   // On first load, check for a saved session and re-hydrate it from the backend
   // so a page refresh doesn't force the seller through onboarding again.
   useEffect(() => {
+    if (blogMatch || authMode) return;
     const token = localStorage.getItem("veevak_token");
     if (!token) { setCheckingSession(false); return; }
 
@@ -2273,6 +2323,8 @@ function confirmLogout() {
     setTab("home");
   }
 
+  if (blogMatch) return <BlogPost slug={decodeURIComponent(blogMatch[1])}/>;
+
   if (checkingSession) return (
     <>
       <style>{styles}</style>
@@ -2290,14 +2342,14 @@ function confirmLogout() {
   if (!onboarded) return (
     <>
       <style>{styles}</style>
-      {showLanding
+      {showLanding && !authMode
         ? <Landing
             onGetStarted={() => { setLoginDirect(false); setShowLanding(false); }}
             onLogin={() => { setLoginDirect(true); setShowLanding(false); }}
             onShowPrivacy={() => setShowPrivacy(true)}
             onShowTerms={() => setShowTerms(true)}
           />
-        : <Onboarding onComplete={handleOnboardComplete} startOnLogin={loginDirect} onBackToLanding={() => setShowLanding(true)}/>
+        : <Onboarding onComplete={handleOnboardComplete} startOnLogin={authMode === "login" || loginDirect} onBackToLanding={() => setShowLanding(true)}/>
       }
       {showPrivacy && <Privacy onClose={() => setShowPrivacy(false)} />}
       {showTerms && <Terms onClose={() => setShowTerms(false)} />}

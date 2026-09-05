@@ -80,7 +80,7 @@ export default function BlogCarousel() {
           style={{ display: "grid", gridAutoFlow: "column", gridAutoColumns: "minmax(280px, 360px)", gap: 18, overflowX: "auto", padding: "4px 2px 14px", cursor: dragging ? "grabbing" : "grab", scrollbarWidth: "thin", scrollbarColor: "#2e2e50 transparent", touchAction: "pan-y" }}
         >
           {ARTICLES.map(article => (
-            <article key={article.id} style={{ background: "#181828", border: "1px solid #2e2e50", borderRadius: 14, overflow: "hidden", minWidth: 0 }}>
+            <a key={article.id} href={`/blog/${article.id}`} target="_blank" rel="noopener noreferrer" style={{ background: "#181828", border: "1px solid #2e2e50", borderRadius: 14, overflow: "hidden", minWidth: 0, textDecoration: "none", display: "block" }}>
               <div style={{ aspectRatio: "16 / 9", background: "#1e1e34", overflow: "hidden" }}>
                 <img src={article.image} alt="" draggable="false" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               </div>
@@ -90,10 +90,10 @@ export default function BlogCarousel() {
                 <p style={{ color: "#9898b8", fontSize: 12, lineHeight: 1.55, minHeight: 38, margin: "0 0 17px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{article.subtitle}</p>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                   <span style={{ color: "#5a5a7a", fontSize: 11 }}>{article.readTime}</span>
-                  <button type="button" style={{ background: "none", border: 0, padding: 0, color: "#c4bcff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Read Article →</button>
+                  <span style={{ color: "#c4bcff", fontSize: 12, fontWeight: 700 }}>Read Article →</span>
                 </div>
               </div>
-            </article>
+            </a>
           ))}
         </div>
       </div>

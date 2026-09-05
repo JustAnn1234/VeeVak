@@ -438,6 +438,21 @@ async def customer_segments(shop_id: int):
         conn.close()
 
 
+@app.get("/associations/{shop_id}")
+async def product_associations(shop_id: int):
+    """
+    Apriori association rule mining on transaction history.
+    Returns product recommendations and bundle suggestions.
+    """
+    from ml.associations import get_product_recommendations
+    conn = get_connection()
+    try:
+        result = get_product_recommendations(shop_id, conn)
+    finally:
+        conn.close()
+    return result
+
+
 # ── Helpers ──────────────────────────────────────────────────────────
 
 def _to_iso_date(date_str: Optional[str]) -> str:
