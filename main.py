@@ -417,6 +417,21 @@ async def forecast(shop_id: int, periods: int = 14):
     return result
 
 
+@app.get("/anomalies/{shop_id}")
+async def anomalies(shop_id: int):
+    """
+    Isolation Forest anomaly detection on sales and expense patterns.
+    Returns plain-English alerts for unusual activity.
+    """
+    from ml.anomaly import detect_anomalies
+    conn = get_connection()
+    try:
+        result = detect_anomalies(shop_id, conn)
+    finally:
+        conn.close()
+    return result
+
+
 # ── Helpers ──────────────────────────────────────────────────────────
 
 def _to_iso_date(date_str: Optional[str]) -> str:

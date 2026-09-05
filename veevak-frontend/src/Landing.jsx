@@ -74,41 +74,177 @@ const showcaseSlides = [
   { src: showcaseHappyOwner, alt: "Happy business owner",               caption: "Empowering your decisions"     },
 ];
 
-function CinematicShowcase() {
-  const [idx, setIdx]           = useState(0);
-  const [progress, setProgress] = useState(0);
-  const DURATION = 4000, TICK = 50;
-  useEffect(() => {
-    const pt = setInterval(() => setProgress(p => p >= 100 ? 0 : p + 100 / (DURATION / TICK)), TICK);
-    const st = setInterval(() => { setIdx(i => (i + 1) % showcaseSlides.length); setProgress(0); }, DURATION);
-    return () => { clearInterval(pt); clearInterval(st); };
-  }, []);
-  const slide = showcaseSlides[idx];
+// ── Mini inline sparkline ───────────────────────────────────────────────
+function MiniSparkline({ values, color, filled = false }) {
+  const max = Math.max(1, ...values);
+  const w = 120, h = 36;
+  const pts = values.map((v, i) => [(i / (values.length - 1)) * w, h - (v / max) * (h - 4)]);
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0]},${p[1]}`).join(" ");
+  const fill = filled ? `${d} L${pts[pts.length-1][0]},${h} L0,${h} Z` : null;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: "100%", height: 36 }}>
+      {filled && <defs><linearGradient id={`sg-${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.35"/><stop offset="100%" stopColor={color} stopOpacity="0"/></linearGradient></defs>}
+      {filled && fill && <path d={fill} fill={`url(#sg-${color.replace("#","")})`}/>}
+      <path d={d} fill="none" stroke={color} strokeWidth="1.8"/>
+    </svg>
+  );
+}
+
+// ── App Dashboard Mockup ────────────────────────────────────────────────
+function AppDashboardMockup() {
+  const acc  = "#8b7ff5";  // accent purple
+  const surf = "#181828";
+  const sur2 = "#1e1e34";
+  const bdr  = "#2e2e50";
+  const gld  = "#7c6af7";
+  const grn  = "#34d399";
+  const red  = "#f87171";
+  const txt  = "#e8e6ff";
+  const mut  = "#9898b8";
+  const dim  = "#5a5a7a";
+
+  const revenueSparkline  = [12, 18, 14, 22, 19, 31, 27, 35, 28, 42, 38, 50];
+  const expenseSparkline  = [8,  10, 7,  11, 9,  14, 12, 10, 13, 11, 16, 14];
+  const channelBars = [
+    { label: "WhatsApp",  pct: 68, color: gld },
+    { label: "Instagram", pct: 22, color: acc },
+    { label: "Offline",   pct: 10, color: mut },
+  ];
+  const recentSales = [
+    { name: "Chioma Obi",   product: "Ankara midi dress",    amount: "₦32,000", status: "paid",    ch: "WA" },
+    { name: "Funke Adeola", product: "Chiffon senator wear", amount: "₦28,500", status: "paid",    ch: "IG" },
+    { name: "Ngozi Nwosu",  product: "Bento cake (6in)",     amount: "₦18,000", status: "pending", ch: "WA" },
+  ];
+
   return (
     <section className="l-section" style={{ background: L.surface }}>
       <div className="l-container">
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <span className="l-badge">See It In Action</span>
           <h2 className="l-h2">The VeeVak Experience</h2>
+          <p className="l-sub" style={{ maxWidth: 520, marginInline: "auto" }}>
+            This is exactly what your dashboard looks like. Real data, clear insights.
+          </p>
         </div>
-        <div style={{ borderRadius: 18, overflow: "hidden", position: "relative", aspectRatio: "16/9", background: L.surface2, boxShadow: "0 24px 60px rgba(0,0,0,0.5)" }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", gap: 6, padding: 12 }}>
-            {showcaseSlides.map((_, i) => (
-              <div key={i} style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.18)", borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ height: "100%", background: "#fff", width: i < idx ? "100%" : i === idx ? `${progress}%` : "0%", transition: "width 0.1s linear" }} />
+
+        {/* ── Browser chrome wrapper ── */}
+        <div style={{ borderRadius: 18, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.6)", border: `1px solid ${bdr}` }}>
+          {/* Browser top bar */}
+          <div style={{ background: "#0e0e1a", padding: "10px 16px", display: "flex", alignItems: "center", gap: 8, borderBottom: `1px solid ${bdr}` }}>
+            <div style={{ display: "flex", gap: 6 }}>
+              {["#f87171","#fbbf24","#34d399"].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />)}
+            </div>
+            <div style={{ flex: 1, background: "#1a1a2e", borderRadius: 6, padding: "4px 12px", fontSize: 11, color: dim, fontFamily: "monospace", marginInline: 12 }}>
+              veevak.vercel.app/app
+            </div>
+          </div>
+
+          {/* App shell */}
+          <div style={{ display: "flex", background: surf, minHeight: 480 }}>
+            {/* Sidebar */}
+            <div style={{ width: 52, background: "#0e0e1a", borderRight: `1px solid ${bdr}`, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 16, gap: 4, flexShrink: 0 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg,${acc},#312c6e)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                <svg width="18" height="15" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg"><path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#fff" fillRule="evenodd"/></svg>
               </div>
-            ))}
+              {[
+                <svg key="h" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={acc} strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+                <svg key="s" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={mut} strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>,
+                <svg key="e" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={mut} strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>,
+                <svg key="r" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={mut} strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+              ].map((icon, i) => (
+                <div key={i} style={{ width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: i === 0 ? sur2 : "transparent", cursor: "pointer" }}>
+                  {icon}
+                </div>
+              ))}
+            </div>
+
+            {/* Main content */}
+            <div style={{ flex: 1, padding: "16px 20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Topbar */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: txt, fontFamily: "Space Grotesk, sans-serif" }}>Good morning, Ann 👋</div>
+                  <div style={{ fontSize: 11, color: mut }}>Here's how your business is doing today</div>
+                </div>
+                <div style={{ fontSize: 11, color: mut, background: sur2, border: `1px solid ${bdr}`, borderRadius: 6, padding: "4px 10px" }}>Ann's Confectionery 🏪</div>
+              </div>
+
+              {/* AI alert banner */}
+              <div style={{ background: "#0d1a10", border: "1px solid #1a3a1a", borderRadius: 10, padding: "10px 14px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 15 }}>🚀</span>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: grn, marginBottom: 2 }}>UNUSUALLY STRONG SALES DAY</div>
+                  <div style={{ fontSize: 11, color: mut, lineHeight: 1.5 }}>Your sales today (₦85,000) were 2.8x your daily average. Great day! Consider what you did differently.</div>
+                  <div style={{ fontSize: 10, color: dim, marginTop: 3, fontFamily: "Space Grotesk, sans-serif" }}>₦85,000 vs ₦30,200 avg</div>
+                </div>
+              </div>
+
+              {/* Stat cards row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                {[
+                  { label: "Today's Revenue", value: "₦85,000", sub: null, color: gld },
+                  { label: "Today's Profit",  value: "₦61,500", sub: "After ₦23,500 expenses", color: grn },
+                ].map(card => (
+                  <div key={card.label} style={{ background: sur2, border: `1px solid ${bdr}`, borderRadius: 10, padding: "12px 14px" }}>
+                    <div style={{ fontSize: 10, color: mut, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{card.label}</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: card.color, fontFamily: "Space Grotesk, sans-serif" }}>{card.value}</div>
+                    {card.sub && <div style={{ fontSize: 10, color: dim, marginTop: 3 }}>{card.sub}</div>}
+                  </div>
+                ))}
+              </div>
+
+              {/* Revenue + Channel split */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                {/* Revenue sparkline */}
+                <div style={{ background: sur2, border: `1px solid ${bdr}`, borderRadius: 10, padding: "12px 14px" }}>
+                  <div style={{ fontSize: 10, color: mut, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>Weekly Revenue</div>
+                  <MiniSparkline values={revenueSparkline} color={gld} filled={true} />
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                    <span style={{ fontSize: 9, color: dim }}>7 days ago</span>
+                    <span style={{ fontSize: 9, color: grn }}>+34% ↑</span>
+                    <span style={{ fontSize: 9, color: dim }}>Today</span>
+                  </div>
+                </div>
+                {/* Channel breakdown */}
+                <div style={{ background: sur2, border: `1px solid ${bdr}`, borderRadius: 10, padding: "12px 14px" }}>
+                  <div style={{ fontSize: 10, color: mut, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>Sales Channels</div>
+                  {channelBars.map(bar => (
+                    <div key={bar.label} style={{ marginBottom: 7 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                        <span style={{ fontSize: 10, color: mut }}>{bar.label}</span>
+                        <span style={{ fontSize: 10, color: bar.color, fontWeight: 600 }}>{bar.pct}%</span>
+                      </div>
+                      <div style={{ height: 4, background: bdr, borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${bar.pct}%`, background: bar.color, borderRadius: 2 }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent sales */}
+              <div style={{ background: sur2, border: `1px solid ${bdr}`, borderRadius: 10, padding: "12px 14px" }}>
+                <div style={{ fontSize: 10, color: mut, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>Recent Sales</div>
+                {recentSales.map((s, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: i < recentSales.length - 1 ? `1px solid ${bdr}` : "none" }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <div style={{ width: 24, height: 24, borderRadius: "50%", background: acc + "33", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: acc }}>
+                        {s.name[0]}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: txt }}>{s.name}</div>
+                        <div style={{ fontSize: 10, color: dim }}>{s.product}</div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: gld }}>{s.amount}</div>
+                      <div style={{ fontSize: 9, color: s.status === "paid" ? grn : "#fbbf24" }}>{s.status}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <img src={slide.src} alt={slide.alt} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(17,17,31,0.85) 0%, transparent 55%)" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 32px", zIndex: 10 }}>
-            <p style={{ fontSize: "clamp(17px,3vw,24px)", fontWeight: 700, color: "#fff", margin: 0 }}>{slide.caption}</p>
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
-          {showcaseSlides.map((_, i) => (
-            <button key={i} onClick={() => { setIdx(i); setProgress(0); }} className="l-dot" style={{ width: i === idx ? 24 : 8, background: i === idx ? L.accent : L.border }} />
-          ))}
         </div>
       </div>
     </section>
@@ -588,7 +724,7 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
       </section>
 
       {/* ── SHOWCASE ────────────────────────────────────────────────── */}
-      <div className="l-reveal"><CinematicShowcase /></div>
+      <div className="l-reveal"><AppDashboardMockup /></div>
 
       {/* ── WHY TOOLS FAIL ──────────────────────────────────────────── */}
       <section className="l-section" style={sec(L.bg)}>

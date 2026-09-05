@@ -7,3 +7,4 @@ pydantic==2.7.1
 psycopg2-binary
 prophet
 pandas
+scikit-learn

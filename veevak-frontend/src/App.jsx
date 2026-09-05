@@ -866,15 +866,22 @@ function Onboarding({ onComplete, startOnLogin, onBackToLanding }) {
 // PAGES
 // ══════════════════════════════════════════════════════════════════════
 function Home({ t, currency, shopId, refreshKey, ownerName }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [data, setData]           = useState(null);
+  const [anomalies, setAnomalies] = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState("");
 
   useEffect(() => {
     if (!shopId) return;
     setLoading(true);
-    apiGet(`/analytics/${shopId}`)
-      .then(setData)
+    Promise.all([
+      apiGet(`/analytics/${shopId}`),
+      apiGet(`/anomalies/${shopId}`).catch(() => null),
+    ])
+      .then(([analyticsResult, anomalyResult]) => {
+        setData(analyticsResult);
+        setAnomalies(anomalyResult);
+      })
       .catch(() => setError("Could not load data. Is the backend running?"))
       .finally(() => setLoading(false));
   }, [shopId, refreshKey]);
@@ -892,10 +899,16 @@ function Home({ t, currency, shopId, refreshKey, ownerName }) {
   const recentSales = data?.recent_sales || [];
   const weekly = data?.weekly_revenue || [];
 
-  // Build a Mon-Sun bar chart from whatever days of data exist this week
   const weekMap = {};
   weekly.forEach(w => { weekMap[w.date] = w.total; });
   const maxWeekly = Math.max(1, ...weekly.map(w => w.total));
+
+  const ALERT_COLORS = {
+    positive: { bg:"#0d1a10", border:"#1a3a1a", icon:"🚀", text: C.greenText  },
+    warning:  { bg:"#1a1200", border:"#3a2a00", icon:"⚠️", text: C.goldLight  },
+    caution:  { bg:"#1a0d00", border:"#3a1a00", icon:"💸", text: "#fb923c"    },
+    info:     { bg: C.surface2, border: C.border, icon:"💡", text: C.textSecondary },
+  };
 
   return (
     <>
@@ -903,6 +916,23 @@ function Home({ t, currency, shopId, refreshKey, ownerName }) {
         <div style={{fontSize:18,fontWeight:600,fontFamily:"Space Grotesk",color:C.textPrimary}}>{greeting()}, {(ownerName||"there").split(" ")[0]} 👋</div>
         <div style={{fontSize:12,color:C.textSecondary,marginTop:2}}>Here's how your business is doing today</div>
       </div>
+      {anomalies?.alerts?.length > 0 && (
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {anomalies.alerts.map((alert, i) => {
+            const s = ALERT_COLORS[alert.severity] || ALERT_COLORS.info;
+            return (
+              <div key={i} style={{background:s.bg,border:`1px solid ${s.border}`,borderRadius:10,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                <span style={{fontSize:16,flexShrink:0}}>{s.icon}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:600,color:s.text,marginBottom:2}}>{alert.title.toUpperCase()}</div>
+                  <div style={{fontSize:12,color:C.textSecondary,lineHeight:1.5}}>{alert.message}</div>
+                  {alert.metric && <div style={{fontSize:11,color:C.textMuted,marginTop:4,fontFamily:"'Space Grotesk',sans-serif"}}>{alert.metric}</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
       <div className="card" style={{background:`linear-gradient(135deg,${C.surface},${C.surface2})`,border:`1px solid ${C.border}`}}>
         <div className="card-label">{t.todayRevenue}</div>
         <div className="card-value">{fmt(total,currency)}</div>
