@@ -392,17 +392,68 @@ function matchAnswer(msg) {
   return CHAT_ANSWERS.default;
 }
 
+// Tiny helper — play a short soft "pop" sound using the Web Audio API
+function playPop() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(520, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(340, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.22);
+  } catch (_) {}
+}
+
+// Greeting bubbles shown before the user opens the chat (QuickBooks-style)
+const GREETINGS = [
+  { delay: 1800, text: "👋 Hello!" },
+  { delay: 3200, text: "Want to know how VeeVak works?" },
+];
+
 function LandingChat() {
-  const [open, setOpen]       = useState(false);
-  const [input, setInput]     = useState("");
-  const [msgs, setMsgs]       = useState([{ from: "bot", text: "Hi! 👋 I'm VeeVak's assistant. Ask me anything about the product." }]);
-  const [loading, setLoading] = useState(false);
-  // Drag state — lets user reposition the launcher button
-  const [pos, setPos]         = useState(null); // null = default bottom-right
+  const [open, setOpen]           = useState(false);
+  const [input, setInput]         = useState("");
+  const [msgs, setMsgs]           = useState([{ from: "bot", text: "Hi! 👋 I'm VeeVak's assistant. Ask me anything about the product." }]);
+  const [loading, setLoading]     = useState(false);
+  // Greeting popup state
+  const [greetings, setGreetings] = useState([]);       // shown bubbles
+  const [greetDismissed, setGreetDismissed] = useState(false);
+  // Drag state
+  const [pos, setPos]         = useState(null);
   const dragRef               = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
   const didDragRef            = useRef(false);
   const bottomRef             = useRef(null);
+
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, open]);
+
+  // Show greeting bubbles sequentially after page load (only once per session)
+  useEffect(() => {
+    if (sessionStorage.getItem("vv_greeted")) return;
+    const timers = GREETINGS.map(({ delay, text }) =>
+      setTimeout(() => {
+        if (open) return; // don't show if already chatting
+        playPop();
+        setGreetings(prev => [...prev, text]);
+      }, delay)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []); // eslint-disable-line
+
+  function dismissGreetings() {
+    setGreetings([]);
+    setGreetDismissed(true);
+    sessionStorage.setItem("vv_greeted", "1");
+  }
+
+  function openChat() {
+    dismissGreetings();
+    setOpen(true);
+    playPop();
+  }
 
   function send() {
     const text = input.trim();
@@ -411,20 +462,16 @@ function LandingChat() {
     setInput("");
     setLoading(true);
     setTimeout(() => {
+      playPop();
       setMsgs(prev => [...prev, { from: "bot", text: matchAnswer(text) }]);
       setLoading(false);
     }, 900);
   }
 
-  // Drag logic for the launcher button
+  // Drag logic
   function onPointerDown(e) {
     didDragRef.current = false;
-    dragRef.current = {
-      dragging: true,
-      startX: e.clientX, startY: e.clientY,
-      origX: pos ? pos.right : 24,
-      origY: pos ? pos.bottom : 28,
-    };
+    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: pos ? pos.right : 24, origY: pos ? pos.bottom : 28 };
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
     e.preventDefault();
@@ -435,7 +482,6 @@ function LandingChat() {
     const dx = e.clientX - d.startX;
     const dy = e.clientY - d.startY;
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) didDragRef.current = true;
-    // right/bottom relative to viewport edges
     setPos({ right: Math.max(8, d.origX - dx), bottom: Math.max(8, d.origY - dy) });
   }
   function onPointerUp() {
@@ -444,16 +490,33 @@ function LandingChat() {
     window.removeEventListener("pointerup", onPointerUp);
   }
 
-  const btnRight  = pos ? pos.right  : 24;
-  const btnBottom = pos ? pos.bottom : 28;
-  // Chat panel anchors above the launcher button
+  const btnRight    = pos ? pos.right  : 24;
+  const btnBottom   = pos ? pos.bottom : 28;
   const panelRight  = btnRight;
   const panelBottom = btnBottom + 64;
 
   return (
     <>
+      {/* ── Greeting popups (QuickBooks-style) ── */}
+      {!open && greetings.length > 0 && (
+        <div style={{ position: "fixed", right: btnRight + 8, bottom: btnBottom + 64, zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, animation: "lc-pop-in 0.3s cubic-bezier(0.175,0.885,0.32,1.275)" }}>
+          {/* Dismiss × */}
+          <button onClick={dismissGreetings}
+            style={{ width: 22, height: 22, borderRadius: "50%", background: L.surface2, border: `1px solid ${L.border}`, color: L.textSecondary, fontSize: 13, lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", alignSelf: "flex-end", marginBottom: -4 }}>
+            ×
+          </button>
+          {greetings.map((text, i) => (
+            <button key={i} onClick={openChat}
+              style={{ background: L.surface, border: `1px solid ${L.border}`, borderRadius: 12, padding: "10px 14px", fontSize: 13, color: L.textPrimary, cursor: "pointer", boxShadow: "0 4px 20px rgba(0,0,0,0.4)", maxWidth: 220, textAlign: "left", lineHeight: 1.4, fontFamily: "inherit", animation: `lc-pop-in 0.28s ${i * 0.12}s both cubic-bezier(0.175,0.885,0.32,1.275)` }}>
+              {text}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Chat panel ── */}
       {open && (
-        <div style={{ position: "fixed", right: panelRight, bottom: panelBottom, width: "min(360px,calc(100vw - 32px))", height: "min(480px,calc(100vh - 120px))", display: "flex", flexDirection: "column", background: L.surface, border: `1px solid ${L.border}`, borderRadius: 16, overflow: "hidden", zIndex: 999, boxShadow: "0 16px 48px rgba(0,0,0,0.5)" }}>
+        <div style={{ position: "fixed", right: panelRight, bottom: panelBottom, width: "min(360px,calc(100vw - 32px))", height: "min(480px,calc(100vh - 120px))", display: "flex", flexDirection: "column", background: L.surface, border: `1px solid ${L.border}`, borderRadius: 16, overflow: "hidden", zIndex: 999, boxShadow: "0 16px 48px rgba(0,0,0,0.5)", animation: "lc-pop-in 0.25s cubic-bezier(0.175,0.885,0.32,1.275)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderBottom: `1px solid ${L.border}`, background: L.surface2 }}>
             <div style={{ width: 34, height: 34, borderRadius: 8, background: `linear-gradient(135deg,${L.accent},${L.accentDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <VeevakLogoSVG size={20} color="#fff" />
@@ -489,15 +552,25 @@ function LandingChat() {
           </div>
         </div>
       )}
-      {/* Launcher button — draggable */}
+
+      {/* ── Launcher button — draggable + bouncing ── */}
       <button
         onPointerDown={onPointerDown}
-        onClick={() => { if (didDragRef.current) return; setOpen(o => !o); }}
+        onClick={() => { if (didDragRef.current) return; open ? setOpen(false) : openChat(); }}
         aria-label={open ? "Close assistant" : "Chat with us"}
-        style={{ position: "fixed", right: btnRight, bottom: btnBottom, width: 56, height: 56, borderRadius: "50%", border: "none", background: `linear-gradient(135deg,${L.accent},${L.accentDim})`, cursor: "grab", zIndex: 998, boxShadow: "0 8px 28px rgba(139,127,245,0.45)", display: "flex", alignItems: "center", justifyContent: "center", touchAction: "none", userSelect: "none" }}>
+        style={{ position: "fixed", right: btnRight, bottom: btnBottom, width: 56, height: 56, borderRadius: "50%", border: "none", background: `linear-gradient(135deg,${L.accent},${L.accentDim})`, cursor: "grab", zIndex: 998, boxShadow: "0 8px 28px rgba(139,127,245,0.5)", display: "flex", alignItems: "center", justifyContent: "center", touchAction: "none", userSelect: "none", animation: open ? "none" : "lc-bounce 2.8s ease-in-out infinite" }}>
         {open ? <span style={{ fontSize: 22, color: "#fff", lineHeight: 1 }}>×</span> : <VeevakLogoSVG size={28} color="#fff" />}
+        {/* Notification dot when greeting is showing */}
+        {!open && greetings.length > 0 && (
+          <span style={{ position: "absolute", top: 4, right: 4, width: 10, height: 10, borderRadius: "50%", background: "#f87171", border: "2px solid rgba(17,17,31,0.8)" }} />
+        )}
       </button>
-      <style>{`@keyframes lc-dot{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}`}</style>
+
+      <style>{`
+        @keyframes lc-dot { 0%,80%,100%{opacity:0.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+        @keyframes lc-bounce { 0%,70%,100%{transform:translateY(0)} 78%{transform:translateY(-9px)} 86%{transform:translateY(0)} 92%{transform:translateY(-4px)} }
+        @keyframes lc-pop-in { from{opacity:0;transform:scale(0.7) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+      `}</style>
     </>
   );
 }

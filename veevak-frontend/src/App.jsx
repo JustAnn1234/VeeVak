@@ -1329,7 +1329,7 @@ function QuickForm({ t, currency, shopId, onDone }) {
           </select>
         </div>
       </div>
-      <button className="btn-primary" onClick={handleSubmit} disabled={!form.product||!form.price||submitting}>
+      <button className="btn-primary" style={{marginTop:8}} onClick={handleSubmit} disabled={!form.product||!form.price||submitting}>
         {submitting ? "Saving..." : t.logSaleBtn}
       </button>
     </div>
@@ -1697,15 +1697,16 @@ function Reports({ t, currency, shopId, refreshKey }) {
   useEffect(() => {
     if (!shopId) return;
     setLoading(true);
+    // Fetch analytics and forecast independently so a forecast 500 never
+    // blocks the analytics data from displaying.
     Promise.all([
-      apiGet(`/analytics/${shopId}`),
-      apiGet(`/forecast/${shopId}?periods=14`),
+      apiGet(`/analytics/${shopId}`).catch(() => null),
+      apiGet(`/forecast/${shopId}?periods=14`).catch(() => null),
     ])
       .then(([analyticsResult, forecastResult]) => {
-        setData(analyticsResult);
-        setForecastData(forecastResult);
+        if (analyticsResult) setData(analyticsResult);
+        if (forecastResult) setForecastData(forecastResult);
       })
-      .catch(() => {})
       .finally(() => setLoading(false));
   }, [shopId, refreshKey]);
 

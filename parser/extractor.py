@@ -294,7 +294,7 @@ Conversation so far:
 
 Your reply:"""
 
-    raw = _call_gemini(prompt, api_key, max_tokens=200, temperature=0.4)
+    raw = _call_gemini(prompt, api_key, max_tokens=600, temperature=0.4)
     return raw.strip() if raw else "Sorry, I had trouble responding. Please try again."
 
 
