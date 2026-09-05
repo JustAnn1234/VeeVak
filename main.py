@@ -255,7 +255,7 @@ async def upload_whatsapp_chat(
         if extraction.get("has_order"):
             sale_date = msgs[0]["date"] if msgs else None
             sale_date_iso = _to_iso_date(sale_date)
-            save_sale(shop_id, extraction, sale_date_iso, channel="whatsapp")
+            save_sale(shop_id, extraction, sale_date_iso, channel=extraction.get("sales_channel", "direct"))
             results.append({"customer": customer, "extraction": extraction})
 
     return {
@@ -274,7 +274,7 @@ async def analyze_pasted_chat(req: PasteAnalyzeRequest):
     extraction = extract_with_gemini(req.chat_text, GEMINI_API_KEY, sym)
 
     if extraction.get("has_order"):
-        save_sale(req.shop_id, extraction, date.today().isoformat(), channel="whatsapp")
+        save_sale(req.shop_id, extraction, date.today().isoformat(), channel=extraction.get("sales_channel", "direct"))
 
     return extraction
 
@@ -333,7 +333,7 @@ async def conversation(req: ConversationRequest):
     if "sale" in intents:
         extraction = extract_with_gemini(latest_text, GEMINI_API_KEY, sym)
         if extraction.get("has_order"):
-            save_sale(req.shop_id, extraction, today, channel="whatsapp")
+            save_sale(req.shop_id, extraction, today, channel=extraction.get("sales_channel", "direct"))
             saved_actions.append("sale logged")
 
     return {"reply": reply, "intent": ",".join(intents), "saved": saved_actions}
