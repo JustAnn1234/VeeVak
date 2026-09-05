@@ -544,6 +544,56 @@ function LineChart({ data }) {
   );
 }
 
+function ForecastChart({ history, forecast }) {
+  const allValues = [
+    ...history.map(h => h.actual || 0),
+    ...forecast.map(f => f.predicted || 0),
+    ...forecast.map(f => f.upper || 0),
+  ];
+  const max = Math.max(1, ...allValues);
+  const totalPoints = history.length + forecast.length;
+  if (totalPoints < 2) return null;
+  const w = 300, h = 70;
+
+  const toX = i => (i / (totalPoints - 1)) * w;
+  const toY = v => h - (v / max) * (h - 8);
+
+  const historyPts  = history.map((d, i)  => [toX(i), toY(d.actual || 0)]);
+  const forecastPts = forecast.map((d, i) => [toX(history.length + i), toY(d.predicted || 0)]);
+  const upperPts    = forecast.map((d, i) => [toX(history.length + i), toY(d.upper || 0)]);
+  const lowerPts    = forecast.map((d, i) => [toX(history.length + i), toY(d.lower || 0)]);
+
+  const histPath = historyPts.map((p,i) => `${i===0?"M":"L"}${p[0]},${p[1]}`).join(" ");
+  const histFill = historyPts.length > 0
+    ? `${histPath} L${historyPts[historyPts.length-1][0]},${h} L0,${h} Z`
+    : "";
+
+  const lastHist = historyPts[historyPts.length - 1];
+  const forecastPath = forecastPts.length > 0 && lastHist
+    ? `M${lastHist[0]},${lastHist[1]} ` + forecastPts.map(p => `L${p[0]},${p[1]}`).join(" ")
+    : "";
+
+  const confidenceBand = upperPts.length > 0
+    ? `M${upperPts.map(p=>`${p[0]},${p[1]}`).join(" L")} L${[...lowerPts].reverse().map(p=>`${p[0]},${p[1]}`).join(" L")} Z`
+    : "";
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{width:"100%",height:80}}>
+      <defs>
+        <linearGradient id="histGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={C.gold} stopOpacity="0.3"/>
+          <stop offset="100%" stopColor={C.gold} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      {histFill      && <path d={histFill}       fill="url(#histGrad)"/>}
+      {histPath      && <path d={histPath}        fill="none" stroke={C.gold} strokeWidth="1.5"/>}
+      {confidenceBand && <path d={confidenceBand} fill={C.gold} fillOpacity="0.1"/>}
+      {forecastPath  && <path d={forecastPath}    fill="none" stroke={C.gold} strokeWidth="1.5" strokeDasharray="4,3" opacity="0.7"/>}
+      {lastHist      && <circle cx={lastHist[0]} cy={lastHist[1]} r="2.5" fill={C.gold}/>}
+    </svg>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // FORGOT PASSWORD
 // ══════════════════════════════════════════════════════════════════════
@@ -1460,14 +1510,21 @@ function Customers({ t, currency, shopId, refreshKey }) {
 }
 
 function Reports({ t, currency, shopId, refreshKey }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData]             = useState(null);
+  const [forecastData, setForecastData] = useState(null);
+  const [loading, setLoading]       = useState(true);
 
   useEffect(() => {
     if (!shopId) return;
     setLoading(true);
-    apiGet(`/analytics/${shopId}`)
-      .then(setData)
+    Promise.all([
+      apiGet(`/analytics/${shopId}`),
+      apiGet(`/forecast/${shopId}?periods=14`),
+    ])
+      .then(([analyticsResult, forecastResult]) => {
+        setData(analyticsResult);
+        setForecastData(forecastResult);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [shopId, refreshKey]);
@@ -1500,17 +1557,33 @@ function Reports({ t, currency, shopId, refreshKey }) {
         </div>
       </div>
       <div className="card">
-        <div className="card-label" style={{marginBottom:8}}>{t.dailyTrend} <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>(last 7 days)</span></div>
+        <div className="card-label" style={{marginBottom:4}}>{t.dailyTrend} <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>(last 7 days + 14-day forecast)</span></div>
+        {forecastData?.summary && (
+          <div style={{fontSize:12,color:C.textSecondary,marginBottom:12,padding:"8px 12px",background:C.surface2,borderRadius:8,borderLeft:`3px solid ${C.gold}`}}>
+            🔮 {forecastData.summary}
+          </div>
+        )}
         {weekly.length === 0 ? (
           <div style={{fontSize:12,color:C.textMuted}}>No sales recorded yet.</div>
         ) : (
           <>
-            <LineChart data={lineData}/>
+            <ForecastChart
+              history={forecastData?.history || weekly.map(w => ({date:w.date, actual:w.total}))}
+              forecast={forecastData?.forecast || []}
+            />
             <div style={{display:"flex",gap:16,marginTop:8}}>
               <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.textSecondary}}>
-                <div style={{width:20,height:2,background:C.gold,borderRadius:1}}/> Revenue
+                <div style={{width:20,height:2,background:C.gold,borderRadius:1}}/> Actual
               </div>
+              {(forecastData?.forecast?.length > 0) && (
+                <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.textSecondary}}>
+                  <div style={{width:20,height:2,borderTop:`2px dashed ${C.gold}`,opacity:0.6}}/> Forecast
+                </div>
+              )}
             </div>
+            {!forecastData?.enough_data && (
+              <div style={{fontSize:11,color:C.textMuted,marginTop:8}}>Keep logging sales to unlock revenue forecasting.</div>
+            )}
           </>
         )}
       </div>
