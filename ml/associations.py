@@ -3,6 +3,8 @@ from collections import defaultdict
 from itertools import combinations
 from datetime import date, timedelta
 
+from database.db import fix_sql
+
 
 def get_transaction_baskets(shop_id: int, conn) -> list:
     """
@@ -10,21 +12,33 @@ def get_transaction_baskets(shop_id: int, conn) -> list:
     Each basket is a set of product names bought in one order.
     """
     cursor = conn.cursor()
-    cursor.execute("""
+    cursor.execute(fix_sql("""
         SELECT products FROM sales
         WHERE shop_id = ?
-        AND order_status != 'cancelled'
+        AND (order_status IS NULL OR order_status != 'cancelled')
         AND products IS NOT NULL
-    """, (shop_id,))
+    """), (shop_id,))
     rows = cursor.fetchall()
 
     baskets = []
     for row in rows:
         try:
-            products = json.loads(row["products"] if isinstance(row, dict) else row[0])
+            raw_products = row["products"] if isinstance(row, dict) else row[0]
+            products = raw_products
+            if isinstance(products, str):
+                products = json.loads(products)
+                while isinstance(products, str):
+                    products = json.loads(products)
             names = set()
+            if not isinstance(products, list):
+                continue
             for p in products:
-                name = p.get("name", "").strip()
+                if isinstance(p, dict):
+                    name = str(p.get("name", "")).strip()
+                elif isinstance(p, str):
+                    name = p.strip()
+                else:
+                    continue
                 if name and name.lower() not in ["unknown", ""]:
                     names.add(name)
             if len(names) >= 1:

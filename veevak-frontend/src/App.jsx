@@ -1822,10 +1822,14 @@ function Reports({ t, currency, shopId, refreshKey }) {
           </div>
         ))}
       </div>
-      {associations?.enough_data && (
+      {associations && (
         <div className="card">
           <div className="card-label" style={{marginBottom:12}}>Product Intelligence</div>
-
+          {!associations.enough_data ? (
+            <div style={{fontSize:12,color:C.textMuted,fontStyle:"italic"}}>
+              {associations.message || "Log at least 5 transactions to start seeing product associations and bundle insights."}
+            </div>
+          ) : <>
           {associations.bundles?.length > 0 && (
             <>
               <div style={{fontSize:12,color:C.textSecondary,fontWeight:600,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.08em"}}>
@@ -1863,6 +1867,7 @@ function Reports({ t, currency, shopId, refreshKey }) {
           )}
 
           {associations.note && <div style={{fontSize:12,color:C.textMuted,fontStyle:"italic",marginTop:8}}>{associations.note}</div>}
+          </>}
         </div>
       )}
     </>
@@ -2227,10 +2232,13 @@ export default function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [checkingSession, setCheckingSession] = useState(!blogMatch && !authMode);
-  const [config, setConfig] = useState({lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""});
-  const [sellerId, setSellerId] = useState(null);
-  const [shops, setShops] = useState([]); // [{id, name}]
-  const [activeShopId, setActiveShopId] = useState(null);
+  const [config, setConfig] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("veevak_user")) || {lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""}; }
+    catch { return {lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""}; }
+  });
+  const [sellerId, setSellerId] = useState(() => config.sellerId || null);
+  const [shops, setShops] = useState(() => config.shops || []); // [{id, name}]
+  const [activeShopId, setActiveShopId] = useState(() => config.shopId || config.shops?.[0]?.id || null);
   const [tab, setTab] = useState("home");
   const [shopOpen, setShopOpen] = useState(false);
   const [addingShop, setAddingShop] = useState(false);
@@ -2261,6 +2269,7 @@ export default function App() {
           return;
         }
         setConfig({ lang: d.language, currency: d.currency, bizName: fetchedShops[0].name, ownerName: d.name || "", email: d.email || "" });
+        localStorage.setItem("veevak_user", JSON.stringify({ lang:d.language, currency:d.currency, bizName:fetchedShops[0].name, ownerName:d.name || "", email:d.email || "", sellerId:d.seller_id, shops:fetchedShops, shopId:fetchedShops[0].id }));
         setSellerId(d.seller_id);
         setShops(fetchedShops);
         setActiveShopId(fetchedShops[0].id);
@@ -2274,7 +2283,9 @@ export default function App() {
   }, []);
 
   function handleOnboardComplete(cfg) {
-    setConfig(cfg);
+    const persisted = { ...cfg, shops:[{id:cfg.shopId,name:cfg.shopName}] };
+    setConfig(persisted);
+    localStorage.setItem("veevak_user", JSON.stringify(persisted));
     setSellerId(cfg.sellerId);
     setShops([{ id: cfg.shopId, name: cfg.shopName }]);
     setActiveShopId(cfg.shopId);
@@ -2286,9 +2297,14 @@ export default function App() {
   setShowLogoutConfirm(true);
 }
 
+  function handleBackToHome() {
+    window.location.href = "/";
+  }
+
 function confirmLogout() {
   localStorage.removeItem("veevak_token");
   localStorage.removeItem("veevak_session");
+  localStorage.removeItem("veevak_user");
   setOnboarded(false);
   setSellerId(null);
   setShops([]);
@@ -2318,7 +2334,11 @@ function confirmLogout() {
     localStorage.setItem("veevak_theme", next);
   }
   function handleSaveSettings(cfg) {
-    setConfig(prev => ({ ...prev, lang: cfg.lang, currency: cfg.currency, bizName: cfg.bizName }));
+    setConfig(prev => {
+      const next = { ...prev, lang: cfg.lang, currency: cfg.currency, bizName: cfg.bizName };
+      localStorage.setItem("veevak_user", JSON.stringify(next));
+      return next;
+    });
     setShops(prev => prev.map(s => s.id === activeShopId ? { ...s, name: cfg.bizName } : s));
     setTab("home");
   }
@@ -2349,7 +2369,7 @@ function confirmLogout() {
             onShowPrivacy={() => setShowPrivacy(true)}
             onShowTerms={() => setShowTerms(true)}
           />
-        : <Onboarding onComplete={handleOnboardComplete} startOnLogin={authMode === "login" || loginDirect} onBackToLanding={() => setShowLanding(true)}/>
+        : <Onboarding onComplete={handleOnboardComplete} startOnLogin={authMode === "login" || loginDirect} onBackToLanding={handleBackToHome}/>
       }
       {showPrivacy && <Privacy onClose={() => setShowPrivacy(false)} />}
       {showTerms && <Terms onClose={() => setShowTerms(false)} />}
@@ -2365,7 +2385,7 @@ function confirmLogout() {
     reports:   <Reports t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
     account:   <Account ownerName={config.ownerName} email={config.email||""} bizName={activeShop?.name||""} currency={config.currency} profilePic={profilePic} shopId={activeShopId} onOpenProfile={()=>setTab("profile")} onOpenSettings={()=>setTab("settings")}/>,
     settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")} onClose={()=>setTab("home")} onLogout={handleLogout}/>,
-    profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("account")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
+    profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("account")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>{ const next={...prev,ownerName:newName,email:newEmail}; localStorage.setItem("veevak_user",JSON.stringify(next)); return next; }); if (newPic) setProfilePic(newPic); }}/>,
   };
 
   // Sidebar nav icons (SVG for crisp rendering)
