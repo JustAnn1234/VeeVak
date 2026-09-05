@@ -305,6 +305,7 @@ const makeStyles = (C) => `
     display:flex; align-items:center; justify-content:center;
     margin-bottom:16px; flex-shrink:0;
   }
+  .sidebar-avatar { width:36px; height:36px; border-radius:50%; background:${C.goldDim}; color:${C.goldLight}; display:flex; align-items:center; justify-content:center; overflow:hidden; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; cursor:pointer; border:1px solid ${C.border}; margin-bottom:16px; flex-shrink:0; }
   .sidebar-item {
     width:44px; height:44px; border-radius:10px;
     display:flex; align-items:center; justify-content:center;
@@ -352,6 +353,14 @@ const makeStyles = (C) => `
   .topbar-actions { display:flex; align-items:center; gap:8px; }
   .btn-ghost { background:transparent; border:1px solid ${C.border}; color:${C.textSecondary}; border-radius:8px; padding:6px 10px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.15s; }
   .btn-ghost:hover { border-color:${C.gold}; color:${C.gold}; }
+  .notification-wrap { position:relative; }
+  .notification-button { position:relative; width:38px; height:38px; border:1px solid ${C.border}; border-radius:10px; background:${C.surface}; color:${C.textPrimary}; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .notification-badge { position:absolute; top:-5px; right:-5px; min-width:17px; height:17px; border-radius:9px; background:${C.redText}; color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .notification-menu { position:absolute; top:calc(100% + 8px); right:0; width:min(340px,calc(100vw - 32px)); background:${C.surface}; border:1px solid ${C.border}; border-radius:12px; padding:14px; z-index:110; box-shadow:0 12px 36px rgba(0,0,0,0.45); }
+  .notification-item { display:flex; gap:9px; padding:10px 0; border-top:1px solid ${C.border}; color:${C.textSecondary}; font-size:12px; line-height:1.45; }
+  .notification-dot { width:7px; height:7px; margin-top:5px; border-radius:50%; background:${C.gold}; flex-shrink:0; }
+  .compact-select { appearance:none; background:${C.surface2}; border:1px solid ${C.border}; border-radius:8px; color:${C.textPrimary}; padding:9px 30px 9px 11px; font:12px 'Inter',sans-serif; cursor:pointer; min-width:150px; }
+  .compact-select:focus { outline:none; border-color:${C.gold}; }
 
   /* SHOP SELECTOR */
   .shop-selector { background:${C.surface}; border:1px solid ${C.border}; color:${C.textPrimary}; border-radius:8px; padding:6px 10px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; position:relative; }
@@ -524,7 +533,7 @@ const makeStyles = (C) => `
   .settings-chevron { color:${C.gold}; font-size:18px; }
   .profile-page { display:flex; flex-direction:column; gap:16px; }
   .profile-summary { display:flex; align-items:center; gap:14px; padding:20px; background:${C.surface}; border:1px solid ${C.border}; border-radius:12px; }
-  .profile-avatar { width:68px; height:68px; border-radius:50%; background:${C.surface2}; border:2px solid ${C.gold}; display:flex; align-items:center; justify-content:center; overflow:hidden; color:${C.gold}; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:600; flex-shrink:0; }
+  .profile-avatar { position:relative; width:68px; height:68px; border-radius:50%; background:${C.surface2}; border:2px solid ${C.gold}; display:flex; align-items:center; justify-content:center; overflow:hidden; color:${C.gold}; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:600; flex-shrink:0; cursor:pointer; }
   .profile-summary h1 { font-family:'Space Grotesk',sans-serif; font-size:20px; color:${C.textPrimary}; }
   .profile-summary p { color:${C.textSecondary}; font-size:12px; margin-top:3px; }
   .profile-photo-btn { color:${C.gold}; background:transparent; border:0; padding:0; font-size:12px; font-weight:600; cursor:pointer; margin-top:8px; }
@@ -534,6 +543,25 @@ const makeStyles = (C) => `
   .profile-form-head p { color:${C.textSecondary}; font-size:12px; margin-top:3px; }
   .profile-actions { display:flex; gap:10px; padding-top:2px; }
   .profile-actions .btn-primary, .profile-actions .btn-secondary { margin-top:0 !important; }
+  .account-page { display:flex; flex-direction:column; gap:16px; }
+  .account-header { display:flex; align-items:center; gap:14px; padding:20px; background:linear-gradient(135deg,${C.surface},${C.surface2}); border:1px solid ${C.border}; border-radius:12px; }
+  .account-avatar { width:64px; height:64px; border-radius:50%; background:${C.goldDim}; color:${C.goldLight}; display:flex; align-items:center; justify-content:center; overflow:hidden; font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; flex-shrink:0; }
+  .account-header h1 { font-family:'Space Grotesk',sans-serif; font-size:20px; color:${C.textPrimary}; }
+  .account-header p { color:${C.textSecondary}; font-size:12px; margin-top:3px; }
+  .account-tier { display:inline-flex; margin-top:8px; padding:3px 9px; border-radius:20px; background:${C.goldDim}; color:${C.goldLight}; font-size:10px; font-weight:600; }
+  .account-metrics { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .account-metric { background:${C.surface}; border:1px solid ${C.border}; border-radius:10px; padding:13px; }
+  .account-metric-value { color:${C.gold}; font:700 19px 'Space Grotesk',sans-serif; }
+  .account-metric-label { color:${C.textSecondary}; font-size:10px; margin-top:3px; }
+  .account-group { background:${C.surface}; border:1px solid ${C.border}; border-radius:12px; overflow:hidden; }
+  .account-group-title { padding:13px 16px 8px; color:${C.textSecondary}; font-size:10px; letter-spacing:.08em; text-transform:uppercase; font-weight:600; }
+  .account-row { display:flex; align-items:center; gap:10px; padding:14px 16px; border-top:1px solid ${C.border}; cursor:pointer; color:${C.textPrimary}; }
+  .account-row:hover { background:${C.surface2}; }
+  .account-row-copy { flex:1; min-width:0; }
+  .account-row-title { font-size:13px; font-weight:600; }
+  .account-row-sub { color:${C.textSecondary}; font-size:11px; margin-top:2px; }
+  .account-row-chevron { color:${C.gold}; font-size:18px; }
+  .logout-button { width:auto !important; align-self:flex-start; padding:10px 16px !important; }
   @media (max-width: 520px) { .profile-actions { flex-direction:column; } }
   .assistant-launcher { position:fixed; right:24px; bottom:92px; width:58px; height:58px; border:0; border-radius:50%; background:${C.gold}; color:#001819; cursor:grab; z-index:80; box-shadow:0 8px 24px rgba(0,0,0,0.35); animation:assistantBounce 2.8s ease-in-out infinite; touch-action:none; }
   .assistant-launcher:active { cursor:grabbing; }
@@ -566,6 +594,17 @@ const fmt = (n, currency) => {
   const sym = CURRENCIES[currency]?.symbol || "₦";
   return sym + n.toLocaleString("en-NG");
 };
+
+function initials(name) {
+  const parts = (name || "VeeVak").trim().split(/\s+/).filter(Boolean);
+  return parts.slice(0, 2).map(part => part[0].toUpperCase()).join("") || "V";
+}
+
+function Avatar({ src, name, className = "" }) {
+  return src
+    ? <img className={className} src={src} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+    : <span className={className}>{initials(name)}</span>;
+}
 
 const ChannelBadge = ({ ch }) => {
   const map = { whatsapp:"ch-whatsapp", instagram:"ch-instagram", offline:"ch-offline", facebook:"ch-facebook", tiktok:"ch-tiktok" };
@@ -1790,6 +1829,9 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
   const [phone, setPhone] = useState(() => localStorage.getItem("veevak_profile_phone") || "");
   const [location, setLocation] = useState(() => localStorage.getItem("veevak_profile_location") || "");
   const [bio, setBio] = useState(() => localStorage.getItem("veevak_profile_bio") || "");
+  const [nickname, setNickname] = useState(() => localStorage.getItem("veevak_profile_nickname") || "");
+  const [gender, setGender] = useState(() => localStorage.getItem("veevak_profile_gender") || "");
+  const [category, setCategory] = useState(() => localStorage.getItem("veevak_profile_category") || "");
   const [saved, setSaved] = useState(false);
   const fileRef = useRef();
 
@@ -1817,6 +1859,9 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
     localStorage.setItem("veevak_profile_phone", phone);
     localStorage.setItem("veevak_profile_location", location);
     localStorage.setItem("veevak_profile_bio", bio);
+    localStorage.setItem("veevak_profile_nickname", nickname);
+    localStorage.setItem("veevak_profile_gender", gender);
+    localStorage.setItem("veevak_profile_category", category);
     setSaved(true);
     setTimeout(()=>setSaved(false), 2000);
   }
@@ -1828,18 +1873,19 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
         <p>Manage the personal details connected to your VeeVak account.</p>
       </div>
       <div className="profile-summary">
-        <div className="profile-avatar" onClick={()=>fileRef.current?.click()}>
+        <div className="profile-avatar" onClick={()=>fileRef.current?.click()} title="Change profile photo">
           {pic ? <img src={pic} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (name?.[0] || "?")}
+          <span style={{position:"absolute",bottom:0,right:0,width:22,height:22,borderRadius:"50%",background:C.gold,color:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>✎</span>
         </div>
         <div>
           <h1>{name || "Your Name"}</h1>
-          <p>{email || "Add your account email"}</p>
+          <p>{accountEmail || "Add your account email"}</p>
           <button className="profile-photo-btn" onClick={()=>fileRef.current?.click()}>Change photo</button>
         </div>
         <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePicChange}/>
       </div>
       <div className="profile-form">
-        <div className="profile-form-head"><h2>Personal information</h2><p>Keep your profile details up to date.</p></div>
+        <div className="profile-form-head"><h2>Account identity</h2><p>Keep your profile details up to date.</p></div>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           <div className="form-field">
             <label className="form-label">Full Name</label>
@@ -1848,6 +1894,10 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
           <div className="form-field">
             <label className="form-label">Email</label>
             <input className="form-input" type="email" value={accountEmail} onChange={e=>setAccountEmail(e.target.value)} placeholder="you@example.com"/>
+          </div>
+          <div className="form-field">
+            <label className="form-label">Nickname / Display Name</label>
+            <input className="form-input" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="How customers should know you"/>
           </div>
           <div className="form-row">
             <div className="form-field">
@@ -1858,6 +1908,17 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
               <label className="form-label">Location</label>
               <input className="form-input" value={location} onChange={e=>setLocation(e.target.value)} placeholder="Lagos, Nigeria"/>
             </div>
+          </div>
+          <div className="form-field">
+            <label className="form-label">Gender</label>
+            <select className="select-input" value={gender} onChange={e=>setGender(e.target.value)}><option value="">Prefer not to say</option><option>Female</option><option>Male</option><option>Other</option></select>
+          </div>
+        </div>
+        <div className="profile-form-head"><h2>Business details</h2><p>Information customers and support teams can use.</p></div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div className="form-field">
+            <label className="form-label">Business Category</label>
+            <input className="form-input" value={category} onChange={e=>setCategory(e.target.value)} placeholder="Fashion, food, beauty..."/>
           </div>
           <div className="form-field">
             <label className="form-label">About / Bio</label>
@@ -1871,6 +1932,64 @@ function Profile({ ownerName, email, token, onBack, onSave }) {
       </div>
     </div>
   );
+}
+
+function Account({ ownerName, email, bizName, currency, profilePic, shopId, onOpenProfile, onOpenSettings }) {
+  const [metrics, setMetrics] = useState({ volume: 0, products: 0 });
+
+  useEffect(() => {
+    if (!shopId) return;
+    Promise.all([apiGet(`/analytics/${shopId}`).catch(() => null), apiGet(`/inventory/${shopId}`).catch(() => null)])
+      .then(([analytics, inventory]) => setMetrics({
+        volume: analytics?.monthly_revenue || 0,
+        products: (inventory?.inventory || []).length,
+      }));
+  }, [shopId]);
+
+  const Row = ({ title, copy, onClick }) => (
+    <div className="account-row" onClick={onClick} role={onClick ? "button" : undefined}>
+      <div className="account-row-copy"><div className="account-row-title">{title}</div><div className="account-row-sub">{copy}</div></div>
+      {onClick && <div className="account-row-chevron">›</div>}
+    </div>
+  );
+
+  return (
+    <div className="account-page">
+      <div className="settings-heading"><h1>Account</h1><p>Manage your VeeVak account and business preferences.</p></div>
+      <div className="account-header">
+        <div className="account-avatar"><Avatar src={profilePic} name={ownerName}/></div>
+        <div><h1>{ownerName || "Your Name"}</h1><p>{bizName || "Your business"} · {email || "No email added"}</p><span className="account-tier">Business account · Tier 1</span></div>
+      </div>
+      <div className="account-metrics">
+        <div className="account-metric"><div className="account-metric-value">{fmt(metrics.volume, currency)}</div><div className="account-metric-label">Monthly volume</div></div>
+        <div className="account-metric"><div className="account-metric-value">{metrics.products}</div><div className="account-metric-label">Active products</div></div>
+      </div>
+      <div className="account-group"><div className="account-group-title">Business &amp; Profile</div><Row title="My Profile" copy="Personal details, photo and business information" onClick={onOpenProfile}/><Row title="Store Category" copy="Set the category that best describes your business"/><Row title="Payout Details" copy="Manage how your business receives money"/></div>
+      <div className="account-group"><div className="account-group-title">Security &amp; Preferences</div><Row title="Password &amp; Security" copy="Keep your account secure"/><Row title="Notification Settings" copy="Choose which business updates you receive" onClick={onOpenSettings}/></div>
+      <div className="account-group"><div className="account-group-title">Support &amp; System</div><Row title="Help Center / Contact Support" copy="Get help with VeeVak"/><Row title="App Version" copy="VeeVak 1.0.0"/></div>
+    </div>
+  );
+}
+
+function Notifications({ shopId, onClose }) {
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    if (!shopId) return;
+    Promise.all([apiGet(`/analytics/${shopId}`).catch(() => null), apiGet(`/anomalies/${shopId}`).catch(() => null)])
+      .then(([analytics, anomalies]) => {
+        const next = [];
+        if (!(analytics?.today_revenue > 0)) next.push("Nothing has been logged for today yet.");
+        if (analytics?.today_expenses > 0 && analytics.today_expenses > (analytics.today_revenue || 0) * 0.3) next.push("Today’s expenses look high compared with today’s revenue.");
+        (anomalies?.alerts || []).slice(0, 3).forEach(alert => next.push(`${alert.title}: ${alert.message}`));
+        setItems(next);
+      });
+  }, [shopId]);
+
+  return <div className="notification-menu" role="dialog" aria-label="Notifications">
+    <div className="section-row"><div className="modal-title">Notifications</div><button className="modal-close" aria-label="Close notifications" onClick={onClose}>×</button></div>
+    {items.length === 0 ? <div style={{fontSize:12,color:C.textMuted,padding:"10px 0"}}>You’re all caught up.</div> : items.map((item, index) => <div className="notification-item" key={index}><span className="notification-dot"/><span>{item}</span></div>)}
+  </div>;
 }
 
 function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic, onSave, onOpenProfile, onClose, onLogout }) {
@@ -1910,25 +2029,15 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic
           </div>
           <div className="form-field">
         <label className="form-label">{t.language}</label>
-        <div className="lang-grid" style={{marginTop:4}}>
-          {LANGUAGES.map(l=>(
-            <div key={l.code} className={`lang-option ${selLang===l.code?"selected":""}`} onClick={()=>setSelLang(l.code)}>
-              <div className="lang-option-label">{l.label}</div>
-            </div>
-          ))}
-        </div>
+        <select className="compact-select" value={selLang} onChange={e=>setSelLang(e.target.value)}>
+          {LANGUAGES.map(l=><option key={l.code} value={l.code}>{l.label}</option>)}
+        </select>
           </div>
           <div className="form-field">
         <label className="form-label">{t.currency}</label>
-        <div className="currency-grid" style={{marginTop:4}}>
-          {Object.entries(CURRENCIES).map(([code,info])=>(
-            <div key={code} className={`currency-option ${selCurrency===code?"selected":""}`} onClick={()=>setSelCurrency(code)}>
-              <div className="currency-flag">{info.flag}</div>
-              <div className="currency-info"><div className="currency-code">{code}</div><div className="currency-name">{info.name}</div></div>
-              <div className="currency-sym">{info.symbol}</div>
-            </div>
-          ))}
-        </div>
+        <select className="compact-select" value={selCurrency} onChange={e=>setSelCurrency(e.target.value)}>
+          {Object.entries(CURRENCIES).map(([code,info])=><option key={code} value={code}>{info.flag} {code} · {info.name}</option>)}
+        </select>
           </div>
           <button className="btn-primary" onClick={()=>onSave({lang:selLang,currency:selCurrency,bizName:name})}>
         {t.saveSettings}
@@ -1937,7 +2046,8 @@ function Settings({ t, lang, currency, bizName, theme, onThemeChange, profilePic
       </div>
       <button
         onClick={onLogout}
-        style={{marginTop:8,background:"transparent",border:`1px solid ${C.redText}`,borderRadius:10,padding:"12px 20px",fontSize:13,fontWeight:600,color:C.redText,cursor:"pointer",width:"100%",fontFamily:"'Inter',sans-serif",transition:"background 0.15s"}}
+        className="logout-button"
+        style={{marginTop:8,background:"transparent",border:`1px solid ${C.redText}`,borderRadius:10,padding:"12px 20px",fontSize:13,fontWeight:600,color:C.redText,cursor:"pointer",fontFamily:"'Inter',sans-serif",transition:"background 0.15s"}}
         onMouseOver={e=>e.currentTarget.style.background=C.red}
         onMouseOut={e=>e.currentTarget.style.background="transparent"}
       >
@@ -2061,6 +2171,7 @@ const NAV = [
 
 export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
   const [showLanding, setShowLanding] = useState(() => !localStorage.getItem("veevak_token"));
   const [loginDirect, setLoginDirect] = useState(false);
@@ -2200,8 +2311,9 @@ function confirmLogout() {
     inventory: <Inventory t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey} onChanged={triggerRefresh}/>,
     customers: <Customers t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
     reports:   <Reports t={t} currency={config.currency} shopId={activeShopId} refreshKey={refreshKey}/>,
+    account:   <Account ownerName={config.ownerName} email={config.email||""} bizName={activeShop?.name||""} currency={config.currency} profilePic={profilePic} shopId={activeShopId} onOpenProfile={()=>setTab("profile")} onOpenSettings={()=>setTab("settings")}/>,
     settings:  <Settings t={t} lang={config.lang} currency={config.currency} bizName={activeShop?.name||""} theme={theme} onThemeChange={handleThemeChange} profilePic={profilePic} onSave={handleSaveSettings} onOpenProfile={()=>setTab("profile")} onClose={()=>setTab("home")} onLogout={handleLogout}/>,
-    profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("settings")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
+    profile:   <Profile ownerName={config.ownerName} email={config.email||""} token={localStorage.getItem("veevak_token") || ""} onBack={()=>setTab("account")} onSave={(newName,newEmail,newPic)=>{ setConfig(prev=>({...prev, ownerName:newName, email:newEmail})); if (newPic) setProfilePic(newPic); }}/>,
   };
 
   // Sidebar nav icons (SVG for crisp rendering)
@@ -2221,11 +2333,7 @@ function confirmLogout() {
 
         {/* ── DESKTOP SIDEBAR ── */}
         <aside className="app-sidebar">
-          <div className="sidebar-logo">
-            <svg width="20" height="17" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#000" fillRule="evenodd"/>
-            </svg>
-          </div>
+          <button className="sidebar-avatar" onClick={()=>setTab("profile")} title="Open profile" aria-label="Open profile"><Avatar src={profilePic} name={config.ownerName}/></button>
           {NAV.map(n => (
             <button key={n.key} className={`sidebar-item ${tab===n.key?"active":""}`} onClick={()=>setTab(n.key)} title={n.label} aria-label={n.label}>
               {SIDEBAR_ICONS[n.key] || n.icon}
@@ -2256,10 +2364,13 @@ function confirmLogout() {
               </div>
             </div>
             <div className="topbar-actions">
-              <button className="btn-ghost" aria-label="Toggle theme" title={theme==="dark"?"Switch to light":"Switch to dark"} onClick={()=>handleThemeChange(theme==="dark"?"light":"dark")} style={{fontSize:16,padding:"6px 9px"}}>
-                {theme==="dark" ? "☀️" : "🌙"}
-              </button>
-              <button className="btn-ghost" onClick={()=>setTab("settings")}>⚙ {t.settings}</button>
+              <div className="notification-wrap">
+                <button className="notification-button" aria-label="Open notifications" onClick={()=>setNotificationsOpen(value=>!value)}>
+                  🔔<span className="notification-badge">!</span>
+                </button>
+                {notificationsOpen && <Notifications shopId={activeShopId} onClose={()=>setNotificationsOpen(false)}/>}
+              </div>
+              <button className="btn-ghost" onClick={()=>setTab("account")}>🙂 Me</button>
               <div className="shop-selector" onClick={()=>setShopOpen(o=>!o)}>
                 <span>🏪</span>
                 <span style={{maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeShop?.name || "Select shop"}</span>
