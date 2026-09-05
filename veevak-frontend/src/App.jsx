@@ -263,12 +263,11 @@ const makeStyles = (C) => `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background:${C.bg}; color:${C.textPrimary}; font-family:'Inter',sans-serif; font-size:14px; line-height:1.5; min-height:100vh; -webkit-font-smoothing:antialiased; }
 
-  .app { width:100%; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:${C.bg}; }
+  .app { width:100%; min-height:100vh; display:flex; flex-direction:column; background:${C.bg}; }
   @media (min-width: 900px) {
-    .app { max-width:1400px; margin: 0 auto; }
-    .page-content { padding:28px 48px 90px; align-items:center; }
-    .page-content > * { width:100%; max-width:720px; margin-left:auto; margin-right:auto; }
-    .topbar { padding:18px 48px 14px; }
+    .page-content { padding:28px 64px 90px; align-items:center; }
+    .page-content > * { width:100%; max-width:860px; margin-left:auto; margin-right:auto; }
+    .topbar { padding:18px 64px 14px; }
   }
 
   /* ONBOARDING */
@@ -2052,6 +2051,9 @@ function confirmLogout() {
             </div>
           </div>
           <div className="topbar-actions">
+            <button className="btn-ghost" aria-label="Toggle theme" title={theme==="dark"?"Switch to light":"Switch to dark"} onClick={()=>handleThemeChange(theme==="dark"?"light":"dark")} style={{fontSize:16,padding:"6px 9px"}}>
+              {theme==="dark" ? "☀️" : "🌙"}
+            </button>
             <button className="btn-ghost" onClick={()=>setTab("settings")}>⚙ {t.settings}</button>
             <div className="shop-selector" onClick={()=>setShopOpen(o=>!o)}>
               <span>🏪</span>
