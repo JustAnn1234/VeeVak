@@ -543,10 +543,64 @@ function LineChart({ data }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// FORGOT PASSWORD
+// ══════════════════════════════════════════════════════════════════════
+function ForgotPassword({ email, setEmail, onBack }) {
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  function handleSend() {
+    if (!email.trim()) return;
+    setLoading(true);
+    // No backend email service yet — open mailto as a fallback
+    setTimeout(() => {
+      setLoading(false);
+      setSent(true);
+    }, 1200);
+  }
+
+  return (
+    <>
+      <div className="onboard-title" style={{fontSize:20,marginBottom:6}}>Reset your password</div>
+      <div className="onboard-sub" style={{marginBottom:24}}>
+        {sent ? "Email sent! Check your inbox." : "Enter your email and we'll help you reset your password."}
+      </div>
+      <div className="onboard-step">
+        {!sent ? (
+          <>
+            <div className="form-field">
+              <label className="form-label">Email address</label>
+              <input className="form-input" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)}/>
+            </div>
+            <button className="btn-primary" onClick={handleSend} disabled={!email.trim()||loading}>
+              {loading ? "Sending..." : "Send reset instructions"}
+            </button>
+            <div style={{fontSize:12,color:C.textSecondary,textAlign:"center",lineHeight:1.6}}>
+              We'll send a link to <strong style={{color:C.textPrimary}}>{email||"your email"}</strong>.<br/>
+              If you don't see it, email us at{" "}
+              <a href="mailto:info.veevak@gmail.com" style={{color:C.gold}}>info.veevak@gmail.com</a>.
+            </div>
+          </>
+        ) : (
+          <div style={{textAlign:"center",padding:"12px 0"}}>
+            <div style={{fontSize:40,marginBottom:12}}>📬</div>
+            <div style={{fontSize:13,color:C.textSecondary,lineHeight:1.7}}>
+              Instructions sent to <strong style={{color:C.textPrimary}}>{email}</strong>.<br/>
+              Check your inbox (and spam folder).
+            </div>
+          </div>
+        )}
+        <button className="btn-secondary" onClick={onBack}>← Back to Log In</button>
+      </div>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // ONBOARDING
 // ══════════════════════════════════════════════════════════════════════
-function Onboarding({ onComplete }) {
-  const [mode, setMode] = useState("welcome"); // welcome | signup | login | business
+function Onboarding({ onComplete, startOnLogin }) {
+  const [mode, setMode] = useState(startOnLogin ? "login" : "welcome"); // welcome | signup | login | business | forgot
   const [lang, setLang] = useState("en");
   const [currency, setCurrency] = useState("NGN");
   const [bizName, setBizName] = useState("");
@@ -711,6 +765,9 @@ function Onboarding({ onComplete }) {
                 <input className="form-input" type={showPw?"text":"password"} placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()} style={{paddingRight:40}}/>
                 <span onClick={()=>setShowPw(s=>!s)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",cursor:"pointer",fontSize:16,color:C.textMuted}}>{showPw?"🙈":"👁"}</span>
               </div>
+              <div style={{textAlign:"right",marginTop:6}}>
+                <button onClick={()=>{setMode("forgot");setError("");}} style={{background:"none",border:"none",fontSize:12,color:C.gold,cursor:"pointer",padding:0,fontFamily:"'Inter',sans-serif"}}>Forgot password?</button>
+              </div>
             </div>
             <button className="btn-primary" onClick={handleLogin} disabled={!email.trim()||!password||loading}>
               {loading ? "Logging in..." : "Log In"}
@@ -719,6 +776,10 @@ function Onboarding({ onComplete }) {
             <button className="btn-secondary" onClick={() => { setMode("welcome"); setError(""); }}>← Back</button>
           </div>
         </>
+      )}
+
+      {mode === "forgot" && (
+        <ForgotPassword email={email} setEmail={setEmail} onBack={()=>{setMode("login");setError("");}} />
       )}
 
       {mode === "signup" && (
@@ -1793,6 +1854,7 @@ export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
   const [showLanding, setShowLanding] = useState(() => !localStorage.getItem("veevak_token"));
+  const [loginDirect, setLoginDirect] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [config, setConfig] = useState({lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""});
   const [sellerId, setSellerId] = useState(null);
@@ -1962,8 +2024,11 @@ function confirmLogout() {
     <>
       <style>{styles}</style>
       {showLanding
-        ? <Landing onGetStarted={() => setShowLanding(false)}/>
-        : <Onboarding onComplete={handleOnboardComplete}/>
+        ? <Landing
+            onGetStarted={() => { setLoginDirect(false); setShowLanding(false); }}
+            onLogin={() => { setLoginDirect(true); setShowLanding(false); }}
+          />
+        : <Onboarding onComplete={handleOnboardComplete} startOnLogin={loginDirect}/>
       }
     </>
   );
