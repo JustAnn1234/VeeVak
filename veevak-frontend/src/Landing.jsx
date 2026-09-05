@@ -1,15 +1,28 @@
 import { useState, useEffect, useRef } from "react";
+// NOTE: veevak-logo.png intentionally removed — logo is inline SVG below
 import heroIllustration from "./assets/hero-illustration.jpg";
 import showcaseChatSales from "./assets/showcase-chat-sales.jpg";
 import showcaseDashboard from "./assets/showcase-dashboard.jpg";
 import showcaseHappyOwner from "./assets/showcase-happy-owner.jpg";
 import showcasePlatforms from "./assets/showcase-platforms.jpg";
 
-// ── Inline VeeVak logo SVG — no image file, no white background ───────
-function VeevakLogoSVG({ size = 36, color = "#7c6af7" }) {
+// ── Correct VeeVak logo SVG — W/double-V shape matching the brand logo ─
+// Single compound path with evenodd fill so inner triangles are transparent
+function VeevakLogoSVG({ size = 36, color = "#8b7ff5" }) {
+  // Outer W shell + three inner cutout triangles in one path (evenodd rule)
+  const d = [
+    // Outer W shape (clockwise)
+    "M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z",
+    // Left cutout triangle (counter-clockwise = hole)
+    "M21 15 L31 15 L43 40 L34 56 Z",
+    // Right cutout triangle (counter-clockwise = hole)
+    "M79 15 L69 15 L57 40 L66 56 Z",
+    // Centre V cutout (counter-clockwise = hole)
+    "M39 18 L61 18 L50 50 Z",
+  ].join(" ");
   return (
-    <svg width={size} height={Math.round(size * 0.8)} viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-label="VeeVak">
-      <path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill={color}/>
+    <svg width={size} height={Math.round(size * 0.85)} viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-label="VeeVak">
+      <path d={d} fill={color} fillRule="evenodd"/>
     </svg>
   );
 }
@@ -199,64 +212,121 @@ function FAQAccordion() {
 
 // ── Landing chat widget ────────────────────────────────────────────────
 const CHAT_ANSWERS = {
-  default: "Thanks for your message! For detailed help, email us at info.veevak@gmail.com — we typically respond within 24 hours.",
-  free: "Yes! VeeVak is completely free to get started. Click 'Get Started Free' to create your account now.",
-  price: "VeeVak is free to use. Premium features may be introduced later but core tools stay free.",
-  safe: "Absolutely. Your data is processed only for your own insights. We never sell or share your data.",
-  work: "VeeVak extracts sales from WhatsApp, Instagram, Facebook, TikTok chats, or you can log sales manually with a quick form.",
-  instagram: "Yes! Paste your Instagram DM conversations into VeeVak and it will extract your orders automatically.",
-  whatsapp: "Yes! WhatsApp is VeeVak's primary supported platform. Export or paste your chat and VeeVak does the rest.",
-  nigeria: "VeeVak was built in Nigeria and is optimised for Nigerian informal commerce — NGN, local products, and familiar business patterns.",
-  signup: "Click 'Get Started Free' at the top of the page to create your free account in under 2 minutes.",
+  default:   "Good question! VeeVak is an AI business clarity tool for small business owners. You can ask me about features, pricing, how it works, or who it's built for.",
+  what:      "VeeVak is an AI-powered sales clarity tool built for small and informal business owners in Nigeria. You log or paste your WhatsApp/Instagram chats and VeeVak automatically extracts your sales, expenses, and customer data — then shows you clear business insights.",
+  free:      "Yes! VeeVak is completely free to get started. Click 'Get Started Free' to create your account now.",
+  price:     "VeeVak is free to use. Premium features may be introduced later but core tools stay free for small business owners.",
+  safe:      "Absolutely. Your data is used only to power your own insights. We never sell or share your business data with anyone.",
+  work:      "VeeVak works in 3 steps: (1) paste or upload your WhatsApp/Instagram chat exports, (2) our AI extracts sales, expenses and customer names automatically, (3) you see it all on a clean dashboard with reports and forecasts.",
+  instagram: "Yes! Paste your Instagram DM conversations into VeeVak and it will extract your orders automatically — no manual entry needed.",
+  whatsapp:  "Yes! WhatsApp is VeeVak's primary platform. Export a chat (tap the chat → three dots → Export Chat) and paste it into VeeVak. Done.",
+  nigeria:   "VeeVak was built in Nigeria and is optimised for Nigerian informal commerce — NGN currency, Ankara sellers, food businesses, beauty services, and local business patterns.",
+  signup:    "Click 'Get Started Free' at the top of the page. It takes under 2 minutes to create an account — no credit card needed.",
+  report:    "Yes! VeeVak's Reports page shows your revenue over time, top products, busiest days, and a 14-day AI revenue forecast so you can plan ahead.",
+  forecast:  "VeeVak uses a machine learning model (Prophet) to forecast your revenue for the next 14 days based on your sales history. The more you log, the more accurate it gets.",
+  customer:  "VeeVak automatically builds a customer list from your chat extractions. You can see who buys most often, their order history, and total spend.",
+  inventory: "Yes! VeeVak has an inventory tracker. Log stock levels and it will alert you when items are running low.",
+  expense:   "Yes! You can log expenses — materials, transport, rent, data — and VeeVak will show your net profit after costs.",
+  ai:        "VeeVak uses Google Gemini AI to read and understand your sales conversations, then converts them into structured business data automatically.",
+  mobile:    "VeeVak works in any mobile browser — no app download needed. Just open the link on your phone and it works like a native app.",
+  support:   "You can reach us at info.veevak@gmail.com — we typically reply within 24 hours. We also have a growing help section in the app.",
 };
 
 function matchAnswer(msg) {
   const m = msg.toLowerCase();
-  if (m.includes("free") || m.includes("cost") || m.includes("pay")) return CHAT_ANSWERS.free;
-  if (m.includes("price") || m.includes("pricing") || m.includes("plan")) return CHAT_ANSWERS.price;
-  if (m.includes("safe") || m.includes("secur") || m.includes("data") || m.includes("privacy")) return CHAT_ANSWERS.safe;
-  if (m.includes("how") && (m.includes("work") || m.includes("use"))) return CHAT_ANSWERS.work;
-  if (m.includes("instagram")) return CHAT_ANSWERS.instagram;
-  if (m.includes("whatsapp")) return CHAT_ANSWERS.whatsapp;
-  if (m.includes("nigeria") || m.includes("naira") || m.includes("ngn")) return CHAT_ANSWERS.nigeria;
-  if (m.includes("sign") || m.includes("start") || m.includes("account") || m.includes("register")) return CHAT_ANSWERS.signup;
+  // "what is veevak" and general "what/who/tell me" questions
+  if (m.includes("what is") || m.includes("what's") || m.includes("tell me about") || m.includes("who is") || (m.includes("what") && m.includes("veevak"))) return CHAT_ANSWERS.what;
+  if (m.includes("forecast") || m.includes("predict") || m.includes("future")) return CHAT_ANSWERS.forecast;
+  if (m.includes("report") || m.includes("analytic") || m.includes("insight") || m.includes("dashboard")) return CHAT_ANSWERS.report;
+  if (m.includes("customer") || m.includes("client") || m.includes("buyer")) return CHAT_ANSWERS.customer;
+  if (m.includes("inventory") || m.includes("stock") || m.includes("product")) return CHAT_ANSWERS.inventory;
+  if (m.includes("expense") || m.includes("cost") && m.includes("track") || m.includes("profit")) return CHAT_ANSWERS.expense;
+  if (m.includes("free") || (m.includes("cost") && !m.includes("track")) || m.includes("pay") || m.includes("charge") || m.includes("subscription")) return CHAT_ANSWERS.free;
+  if (m.includes("price") || m.includes("pricing") || m.includes("plan") || m.includes("tier")) return CHAT_ANSWERS.price;
+  if (m.includes("safe") || m.includes("secur") || m.includes("data") || m.includes("privacy") || m.includes("trust")) return CHAT_ANSWERS.safe;
+  if ((m.includes("how") && (m.includes("work") || m.includes("use") || m.includes("start"))) || m.includes("explain")) return CHAT_ANSWERS.work;
+  if (m.includes("ai") || m.includes("gemini") || m.includes("machine learning") || m.includes("model")) return CHAT_ANSWERS.ai;
+  if (m.includes("instagram") || m.includes("ig ") || m.includes("ig,") || m.includes("dm")) return CHAT_ANSWERS.instagram;
+  if (m.includes("whatsapp") || m.includes("wha")) return CHAT_ANSWERS.whatsapp;
+  if (m.includes("nigeria") || m.includes("naira") || m.includes("ngn") || m.includes("lagos") || m.includes("abuja")) return CHAT_ANSWERS.nigeria;
+  if (m.includes("sign") || m.includes("register") || m.includes("account") || m.includes("join") || m.includes("creat")) return CHAT_ANSWERS.signup;
+  if (m.includes("phone") || m.includes("mobile") || m.includes("app") || m.includes("download")) return CHAT_ANSWERS.mobile;
+  if (m.includes("help") || m.includes("support") || m.includes("contact") || m.includes("email")) return CHAT_ANSWERS.support;
+  if (m.includes("start") || m.includes("begin") || m.includes("try")) return CHAT_ANSWERS.signup;
   return CHAT_ANSWERS.default;
 }
 
 function LandingChat() {
-  const [open, setOpen]     = useState(false);
-  const [input, setInput]   = useState("");
-  const [msgs, setMsgs]     = useState([{ from: "bot", text: "Hi! 👋 I'm VeeVak's assistant. Ask me anything about the product." }]);
+  const [open, setOpen]       = useState(false);
+  const [input, setInput]     = useState("");
+  const [msgs, setMsgs]       = useState([{ from: "bot", text: "Hi! 👋 I'm VeeVak's assistant. Ask me anything about the product." }]);
   const [loading, setLoading] = useState(false);
-  const bottomRef = useRef(null);
+  // Drag state — lets user reposition the launcher button
+  const [pos, setPos]         = useState(null); // null = default bottom-right
+  const dragRef               = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
+  const didDragRef            = useRef(false);
+  const bottomRef             = useRef(null);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, open]);
 
   function send() {
     const text = input.trim();
     if (!text || loading) return;
-    const next = [...msgs, { from: "user", text }];
-    setMsgs(next);
+    setMsgs(prev => [...prev, { from: "user", text }]);
     setInput("");
     setLoading(true);
     setTimeout(() => {
-      setMsgs(m => [...m, { from: "bot", text: matchAnswer(text) }]);
+      setMsgs(prev => [...prev, { from: "bot", text: matchAnswer(text) }]);
       setLoading(false);
     }, 900);
   }
 
+  // Drag logic for the launcher button
+  function onPointerDown(e) {
+    didDragRef.current = false;
+    dragRef.current = {
+      dragging: true,
+      startX: e.clientX, startY: e.clientY,
+      origX: pos ? pos.right : 24,
+      origY: pos ? pos.bottom : 28,
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    e.preventDefault();
+  }
+  function onPointerMove(e) {
+    const d = dragRef.current;
+    if (!d.dragging) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) didDragRef.current = true;
+    // right/bottom relative to viewport edges
+    setPos({ right: Math.max(8, d.origX - dx), bottom: Math.max(8, d.origY - dy) });
+  }
+  function onPointerUp() {
+    dragRef.current.dragging = false;
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+  }
+
+  const btnRight  = pos ? pos.right  : 24;
+  const btnBottom = pos ? pos.bottom : 28;
+  // Chat panel anchors above the launcher button
+  const panelRight  = btnRight;
+  const panelBottom = btnBottom + 64;
+
   return (
     <>
       {open && (
-        <div style={{ position: "fixed", right: 24, bottom: 92, width: "min(360px,calc(100vw - 32px))", height: "min(480px,calc(100vh - 120px))", display: "flex", flexDirection: "column", background: L.surface, border: `1px solid ${L.border}`, borderRadius: 16, overflow: "hidden", zIndex: 999, boxShadow: "0 16px 48px rgba(0,0,0,0.5)" }}>
+        <div style={{ position: "fixed", right: panelRight, bottom: panelBottom, width: "min(360px,calc(100vw - 32px))", height: "min(480px,calc(100vh - 120px))", display: "flex", flexDirection: "column", background: L.surface, border: `1px solid ${L.border}`, borderRadius: 16, overflow: "hidden", zIndex: 999, boxShadow: "0 16px 48px rgba(0,0,0,0.5)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderBottom: `1px solid ${L.border}`, background: L.surface2 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 8, background: `linear-gradient(135deg,${L.accent},${L.accentDim})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: `linear-gradient(135deg,${L.accent},${L.accentDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <VeevakLogoSVG size={20} color="#fff" />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: L.textPrimary }}>VeeVak Assistant</div>
-              <div style={{ fontSize: 11, color: L.textSecondary }}>Ask me anything</div>
+              <div style={{ fontSize: 11, color: L.textSecondary }}>Ask me anything about VeeVak</div>
             </div>
-            <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: L.textSecondary, fontSize: 20, cursor: "pointer", lineHeight: 1 }}>×</button>
+            <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: L.textSecondary, fontSize: 20, cursor: "pointer", lineHeight: 1, flexShrink: 0 }}>×</button>
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "14px", display: "flex", flexDirection: "column", gap: 10 }}>
             {msgs.map((m, i) => (
@@ -264,24 +334,34 @@ function LandingChat() {
                 {m.text}
               </div>
             ))}
-            {loading && <div style={{ alignSelf: "flex-start", background: L.surface2, borderRadius: 12, borderBottomLeftRadius: 3, padding: "10px 16px", fontSize: 20, color: L.textSecondary }}>···</div>}
+            {loading && (
+              <div style={{ alignSelf: "flex-start", background: L.surface2, borderRadius: 12, borderBottomLeftRadius: 3, padding: "10px 16px", display: "flex", gap: 4 }}>
+                {[0,1,2].map(i => <span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: L.textSecondary, display: "inline-block", animation: `lc-dot 1.2s ${i*0.2}s infinite` }} />)}
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
           <div style={{ display: "flex", gap: 8, padding: "12px", borderTop: `1px solid ${L.border}` }}>
-            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()}
+            <input value={input} onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
               placeholder="Type a question…"
               style={{ flex: 1, background: L.surface2, border: `1px solid ${L.border}`, borderRadius: 8, padding: "9px 12px", fontSize: 13, color: L.textPrimary, outline: "none", fontFamily: "inherit" }} />
             <button onClick={send} disabled={!input.trim() || loading}
-              style={{ width: 38, height: 38, borderRadius: 8, background: L.accent, border: "none", color: "#fff", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", opacity: !input.trim() ? 0.4 : 1 }}>
+              style={{ width: 38, height: 38, borderRadius: 8, background: L.accent, border: "none", color: "#fff", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: !input.trim() ? 0.5 : 1, transition: "opacity 0.15s" }}>
               ➤
             </button>
           </div>
         </div>
       )}
-      <button onClick={() => setOpen(o => !o)} aria-label="Open chat"
-        style={{ position: "fixed", right: 24, bottom: 28, width: 56, height: 56, borderRadius: "50%", border: "none", background: `linear-gradient(135deg,${L.accent},${L.accentDim})`, cursor: "pointer", zIndex: 998, boxShadow: "0 8px 24px rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {/* Launcher button — draggable */}
+      <button
+        onPointerDown={onPointerDown}
+        onClick={() => { if (didDragRef.current) return; setOpen(o => !o); }}
+        aria-label={open ? "Close assistant" : "Chat with us"}
+        style={{ position: "fixed", right: btnRight, bottom: btnBottom, width: 56, height: 56, borderRadius: "50%", border: "none", background: `linear-gradient(135deg,${L.accent},${L.accentDim})`, cursor: "grab", zIndex: 998, boxShadow: "0 8px 28px rgba(139,127,245,0.45)", display: "flex", alignItems: "center", justifyContent: "center", touchAction: "none", userSelect: "none" }}>
         {open ? <span style={{ fontSize: 22, color: "#fff", lineHeight: 1 }}>×</span> : <VeevakLogoSVG size={28} color="#fff" />}
       </button>
+      <style>{`@keyframes lc-dot{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}`}</style>
     </>
   );
 }
@@ -330,7 +410,7 @@ function useScrollReveal() {
 }
 
 // ── Main Landing component ─────────────────────────────────────────────
-export default function Landing({ onGetStarted, onLogin }) {
+export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTerms }) {
   const [navScrolled, setNavScrolled] = useState(false);
   const [isMobile, setIsMobile]       = useState(window.innerWidth < 900);
   useScrollReveal();
@@ -755,9 +835,9 @@ export default function Landing({ onGetStarted, onLogin }) {
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
             <p style={{ margin: 0, fontSize: 13, color: L.textMuted }}>© {new Date().getFullYear()} VeeVak. All rights reserved.</p>
             <div style={{ display: "flex", gap: 20 }}>
-              {["Privacy","Terms","Contact"].map(t => (
-                <a key={t} href="mailto:info.veevak@gmail.com" className="l-navlink" style={{ fontSize: 12, color: L.textMuted }}>{t}</a>
-              ))}
+              <button onClick={() => onShowPrivacy && onShowPrivacy()} style={{ background:"none",border:"none",cursor:"pointer",fontSize:12,color:L.textSecondary,fontFamily:"inherit",padding:0 }} className="l-navlink">Privacy</button>
+              <button onClick={() => onShowTerms && onShowTerms()} style={{ background:"none",border:"none",cursor:"pointer",fontSize:12,color:L.textSecondary,fontFamily:"inherit",padding:0 }} className="l-navlink">Terms</button>
+              <a href="mailto:info.veevak@gmail.com" className="l-navlink" style={{ fontSize:12, color:L.textSecondary, textDecoration:"none" }}>Contact</a>
             </div>
           </div>
         </div>

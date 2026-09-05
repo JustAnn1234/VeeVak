@@ -21,7 +21,8 @@ from database.db import (
     init_db, create_seller, get_seller_by_email, create_shop, get_shops_for_seller,
     save_sale, get_sales_for_shop, save_expense, get_expenses_for_shop,
     upsert_inventory_item, get_inventory_for_shop, get_shop_analytics,
-    verify_password, create_session, get_seller_by_session, update_seller_profile
+    verify_password, create_session, get_seller_by_session, update_seller_profile,
+    get_connection
 )
 
 load_dotenv()
@@ -399,6 +400,21 @@ async def list_inventory(shop_id: int):
 @app.get("/analytics/{shop_id}")
 async def analytics(shop_id: int):
     return get_shop_analytics(shop_id)
+
+
+@app.get("/forecast/{shop_id}")
+async def forecast(shop_id: int, periods: int = 14):
+    """
+    Revenue forecasting using Prophet time-series model.
+    Returns predicted revenue for the next N days with confidence intervals.
+    """
+    from ml.forecasting import forecast_revenue
+    conn = get_connection()
+    try:
+        result = forecast_revenue(shop_id, conn, periods=periods)
+    finally:
+        conn.close()
+    return result
 
 
 # ── Helpers ──────────────────────────────────────────────────────────

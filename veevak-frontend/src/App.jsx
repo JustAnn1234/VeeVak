@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Landing from "./Landing";
+import Privacy from "./Privacy";
+import Terms from "./Terms";
 
 // ── API configuration ───────────────────────────────────────────────
 const API_BASE = "https://veevak-backend.onrender.com";
@@ -680,65 +682,10 @@ function Onboarding({ onComplete, startOnLogin, onBackToLanding }) {
   return (
     <div className="onboard">
       <div className="onboard-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-  <svg
-  width="20"
-  height="20"
-  viewBox="0 0 100 80"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    d="
-      M8 8
-      H32
-      L50 33
-      L68 8
-      H92
-      V55
-      L78 70
-      H62
-      L50 53
-      L38 70
-      H22
-      L8 55
-      Z
-    "
-    fill="#000000"
-  />
-
-  <path
-    d="
-      M22 18
-      V48
-      L34 58
-      L43 40
-      Z
-    "
-    fill={C.gold}
-  />
-
-  <path
-    d="
-      M78 18
-      V48
-      L66 58
-      L57 40
-      Z
-    "
-    fill={C.gold}
-  />
-
-  <path
-    d="
-      M40 22
-      L50 36
-      L60 22
-      L50 48
-      Z
-    "
-    fill={C.gold}
-  />
-</svg>
-</div>
+        <svg width="48" height="41" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-label="VeeVak">
+          <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill={C.gold} fillRule="evenodd"/>
+        </svg>
+      </div>
       {mode === "welcome" && (
         <>
           <div className="onboard-title">{t.welcome}</div>
@@ -1823,7 +1770,7 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
     <>
       {open && <div className="assistant-panel">
         <div className="assistant-head">
-          <div className="settings-avatar" style={{width:36,height:36,padding:7}}><svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill={C.gold}/></svg></div>
+          <div className="settings-avatar" style={{width:36,height:36,padding:4,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="28" height="24" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill={C.gold} fillRule="evenodd"/></svg></div>
           <div className="assistant-head-copy"><div className="assistant-title">VeeVak Assistant</div><div className="assistant-status">Sales, expenses, inventory and business answers</div></div>
           <button className="assistant-close" aria-label="Close assistant" onClick={()=>setOpen(false)}>×</button>
         </div>
@@ -1840,9 +1787,7 @@ function FloatingAssistant({ shopId, shopName, currency, onChanged }) {
         <div className="assistant-hint">Enter adds a new line. Ctrl+Enter sends.</div>
       </div>}
       <button className="assistant-launcher" style={{...(position ? {left:position.left,top:position.top,right:"auto",bottom:"auto"} : undefined), background:`linear-gradient(135deg,${C.gold},${C.goldDim})`}} aria-label={open ? "Close VeeVak Assistant" : "Open VeeVak Assistant"} onPointerDown={startDragging} onClick={()=>{if(draggedRef.current){draggedRef.current=false;return;}setOpen(value=>!value);}}>
-        {open ? <span style={{fontSize:22,color:"#fff",lineHeight:1}}>×</span> : <svg className="assistant-logo" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M8 10 L28 60 L48 10 L38 10 L28 38 L18 10 Z M52 10 L72 60 L92 10 L82 10 L72 38 L62 10 Z" fill="#fff"/>
-        </svg>}
+        {open ? <span style={{fontSize:22,color:"#fff",lineHeight:1}}>×</span> : <svg width="26" height="22" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#fff" fillRule="evenodd"/></svg>}
       </button>
     </>
   );
@@ -1865,6 +1810,8 @@ export default function App() {
   const [onboarded, setOnboarded] = useState(false);
   const [showLanding, setShowLanding] = useState(() => !localStorage.getItem("veevak_token"));
   const [loginDirect, setLoginDirect] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [config, setConfig] = useState({lang:"en",currency:"NGN",bizName:"My Shop",ownerName:""});
   const [sellerId, setSellerId] = useState(null);
@@ -1966,65 +1913,10 @@ function confirmLogout() {
       <style>{styles}</style>
       <div className="onboard">
         <div className="onboard-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-  <svg
-  width="20"
-  height="20"
-  viewBox="0 0 100 80"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    d="
-      M8 8
-      H32
-      L50 33
-      L68 8
-      H92
-      V55
-      L78 70
-      H62
-      L50 53
-      L38 70
-      H22
-      L8 55
-      Z
-    "
-    fill="#000000"
-  />
-
-  <path
-    d="
-      M22 18
-      V48
-      L34 58
-      L43 40
-      Z
-    "
-    fill={C.gold}
-  />
-
-  <path
-    d="
-      M78 18
-      V48
-      L66 58
-      L57 40
-      Z
-    "
-    fill={C.gold}
-  />
-
-  <path
-    d="
-      M40 22
-      L50 36
-      L60 22
-      L50 48
-      Z
-    "
-    fill={C.gold}
-  />
-</svg>
-</div>
+          <svg width="48" height="41" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-label="VeeVak">
+            <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill={C.gold} fillRule="evenodd"/>
+          </svg>
+        </div>
         <div className="onboard-sub">Loading...</div>
       </div>
     </>
@@ -2037,9 +1929,13 @@ function confirmLogout() {
         ? <Landing
             onGetStarted={() => { setLoginDirect(false); setShowLanding(false); }}
             onLogin={() => { setLoginDirect(true); setShowLanding(false); }}
+            onShowPrivacy={() => setShowPrivacy(true)}
+            onShowTerms={() => setShowTerms(true)}
           />
         : <Onboarding onComplete={handleOnboardComplete} startOnLogin={loginDirect} onBackToLanding={() => setShowLanding(true)}/>
       }
+      {showPrivacy && <Privacy onClose={() => setShowPrivacy(false)} />}
+      {showTerms && <Terms onClose={() => setShowTerms(false)} />}
     </>
   );
 
@@ -2061,65 +1957,10 @@ function confirmLogout() {
         <div className="topbar">
           <div className="topbar-brand">
             <div className="brand-logo" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-  <svg
-  width="20"
-  height="20"
-  viewBox="0 0 100 80"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    d="
-      M8 8
-      H32
-      L50 33
-      L68 8
-      H92
-      V55
-      L78 70
-      H62
-      L50 53
-      L38 70
-      H22
-      L8 55
-      Z
-    "
-    fill="#000000"
-  />
-
-  <path
-    d="
-      M22 18
-      V48
-      L34 58
-      L43 40
-      Z
-    "
-    fill={C.gold}
-  />
-
-  <path
-    d="
-      M78 18
-      V48
-      L66 58
-      L57 40
-      Z
-    "
-    fill={C.gold}
-  />
-
-  <path
-    d="
-      M40 22
-      L50 36
-      L60 22
-      L50 48
-      Z
-    "
-    fill={C.gold}
-  />
-</svg>
-</div>
+              <svg width="20" height="17" viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M5 5 H30 L50 35 L70 5 H95 V60 L78 78 H60 L50 62 L40 78 H22 L5 60 Z M21 15 L31 15 L43 40 L34 56 Z M79 15 L69 15 L57 40 L66 56 Z M39 18 L61 18 L50 50 Z" fill="#000" fillRule="evenodd"/>
+              </svg>
+            </div>
             <div>
               <div className="brand-name">VeeVak</div>
               <div className="brand-sub">AI sales clarity</div>
