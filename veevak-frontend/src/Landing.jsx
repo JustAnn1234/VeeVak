@@ -5,6 +5,7 @@ import showcaseChatSales from "./assets/showcase-chat-sales.jpg";
 import showcaseDashboard from "./assets/showcase-dashboard.jpg";
 import showcaseHappyOwner from "./assets/showcase-happy-owner.jpg";
 import showcasePlatforms from "./assets/showcase-platforms.jpg";
+import BlogCarousel from "./BlogCarousel";
 
 // ── Correct VeeVak logo SVG — W/double-V shape matching the brand logo ─
 // Single compound path with evenodd fill so inner triangles are transparent
@@ -580,7 +581,7 @@ function MobileMenu({ onGetStarted, onLogin, scrollTo }) {
   const [open, setOpen] = useState(false);
   const links = [
     { id: "problem", label: "Problem" }, { id: "features", label: "Features" },
-    { id: "solution", label: "Solution" }, { id: "faqs", label: "FAQs" }, { id: "contact", label: "Contact" },
+    { id: "solution", label: "Solution" }, { id: "faqs", label: "FAQs" }, { id: "footer", label: "Contact" },
   ];
   return (
     <div>
@@ -650,7 +651,7 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
 
   const navLinks = [
     { id: "problem", label: "Problem" }, { id: "features", label: "Features" },
-    { id: "solution", label: "Solution" }, { id: "faqs", label: "FAQs" }, { id: "contact", label: "Contact" },
+    { id: "solution", label: "Solution" }, { id: "faqs", label: "FAQs" }, { id: "footer", label: "Contact" },
   ];
 
   return (
@@ -741,7 +742,7 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
               <>
                 <button onClick={handleLogin} className="l-btn-ghost">Log In</button>
                 <button onClick={onGetStarted} className="l-btn-accent">Get Started Free</button>
-                <button onClick={() => scrollTo("contact")} className="l-btn-primary" style={{ padding: "8px 18px", fontSize: 13 }}>Contact Us</button>
+                <button onClick={() => scrollTo("footer")} className="l-btn-primary" style={{ padding: "8px 18px", fontSize: 13 }}>Contact Us</button>
               </>
             )}
             {isMobile && <MobileMenu onGetStarted={onGetStarted} onLogin={handleLogin} scrollTo={scrollTo} />}
@@ -945,37 +946,11 @@ export default function Landing({ onGetStarted, onLogin, onShowPrivacy, onShowTe
         </div>
       </section>
 
-      {/* ── CONTACT ─────────────────────────────────────────────────── */}
-      <section id="contact" className="l-section" style={sec(L.bg)}>
-        <div className="l-container">
-          <div className="l-reveal" style={{ textAlign: "center", marginBottom: 52 }}>
-            <h2 className="l-h2">Get in touch</h2>
-            <p className="l-sub">For general enquiries, partnerships, and support — we're here.</p>
-          </div>
-
-          <div className="l-reveal" style={{ display: "flex", justifyContent: "center", marginBottom: 40 }}>
-            <a href="mailto:info.veevak@gmail.com"
-              style={{ display: "inline-flex", alignItems: "center", gap: 12, padding: "18px 32px", background: L.surface, border: `1px solid ${L.border}`, borderRadius: 14, textDecoration: "none", color: L.textPrimary, fontSize: 16, fontWeight: 600, transition: "border-color 0.2s" }}>
-              <span style={{ fontSize: 22 }}>✉️</span> info.veevak@gmail.com
-            </a>
-          </div>
-
-          <div className="l-reveal" style={{ display: "flex", justifyContent: "center", gap: 14 }}>
-            <a href="https://www.linkedin.com/company/veevak-official" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="l-soc">
-              <LinkedInSVG size={18} color="currentColor" />
-            </a>
-            <a href="https://www.instagram.com/veevak.official" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="l-soc">
-              <InstagramSVG size={18} color="currentColor" />
-            </a>
-            <a href="https://x.com/VeeVak_official" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" className="l-soc">
-              <XSVG size={16} color="currentColor" />
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* ── INSIGHTS ────────────────────────────────────────────────── */}
+      <BlogCarousel />
 
       {/* ── FOOTER ──────────────────────────────────────────────────── */}
-      <footer style={{ borderTop: `1px solid ${L.border}`, background: L.surface, padding: "60px 0 32px" }}>
+      <footer id="footer" style={{ borderTop: `1px solid ${L.border}`, background: L.surface, padding: "60px 0 32px" }}>
         <div className="l-container">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 40, marginBottom: 52 }}>
 
