@@ -3,13 +3,18 @@ import blogPosts from "./data/blogPosts.json";
 export default function BlogPost({ slug }) {
   const post = blogPosts.find(item => item.slug === slug);
 
+  const navigateHome = () => {
+    window.history.pushState({}, "", "/?landing=1");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
+
   if (!post) {
-    return <main style={pageStyle}><a href="/?landing=1" style={backStyle}>← Back to Home</a><h1 style={titleStyle}>Article not found</h1></main>;
+    return <main style={pageStyle}><button type="button" onClick={navigateHome} style={{...backStyle, background: "transparent", border: "none", padding: 0, cursor: "pointer"}}>← Back to Home</button><h1 style={titleStyle}>Article not found</h1></main>;
   }
 
   return (
     <main style={pageStyle}>
-      <a href="/?landing=1" style={backStyle}>← Back to Home</a>
+      <button type="button" onClick={navigateHome} style={{...backStyle, background: "transparent", border: "none", padding: 0, cursor: "pointer"}}>← Back to Home</button>
       <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:16}}>
         <span style={pillStyle}>{post.category}</span><span style={mutedStyle}>{post.readTime} · {post.date}</span>
       </div>

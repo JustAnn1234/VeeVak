@@ -32,6 +32,12 @@ export default function BlogCarousel() {
   const dragRef = useRef(null);
   const [dragging, setDragging] = useState(false);
 
+  function navigateTo(path) {
+    if (window.location.pathname === path) return;
+    window.history.pushState({}, "", path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }
+
   function move(direction) {
     trackRef.current?.scrollBy({ left: direction * 360, behavior: "smooth" });
   }
@@ -80,7 +86,7 @@ export default function BlogCarousel() {
           style={{ display: "grid", gridAutoFlow: "column", gridAutoColumns: "minmax(280px, 360px)", gap: 18, overflowX: "auto", padding: "4px 2px 14px", cursor: dragging ? "grabbing" : "grab", scrollbarWidth: "thin", scrollbarColor: "#2e2e50 transparent", touchAction: "pan-y" }}
         >
           {ARTICLES.map(article => (
-            <a key={article.id} href={`/blog/${article.id}`} target="_blank" rel="noopener noreferrer" style={{ background: "#181828", border: "1px solid #2e2e50", borderRadius: 14, overflow: "hidden", minWidth: 0, textDecoration: "none", display: "block" }}>
+            <div key={article.id} onClick={() => navigateTo(`/blog/${article.id}`)} style={{ background: "#181828", border: "1px solid #2e2e50", borderRadius: 14, overflow: "hidden", minWidth: 0, textDecoration: "none", display: "block", cursor: "pointer" }}>
               <div style={{ aspectRatio: "16 / 9", background: "#1e1e34", overflow: "hidden" }}>
                 <img src={article.image} alt="" draggable="false" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               </div>
@@ -93,7 +99,7 @@ export default function BlogCarousel() {
                   <span style={{ color: "#c4bcff", fontSize: 12, fontWeight: 700 }}>Read Article →</span>
                 </div>
               </div>
-            </a>
+            </div>
           ))}
         </div>
       </div>

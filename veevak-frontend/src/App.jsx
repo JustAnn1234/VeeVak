@@ -2436,8 +2436,24 @@ const NAV = [
 ];
 
 export default function App() {
-  const blogIndex = window.location.pathname === "/blog";
-  const blogMatch = window.location.pathname.match(/^\/blog\/([^/]+)\/?$/);
+  const getCurrentPath = () => window.location.pathname;
+  const [currentPath, setCurrentPath] = useState(getCurrentPath);
+
+  useEffect(() => {
+    const syncPath = () => setCurrentPath(window.location.pathname);
+    window.addEventListener("popstate", syncPath);
+    return () => window.removeEventListener("popstate", syncPath);
+  }, []);
+
+  const navigate = (path) => {
+    if (window.location.pathname === path) return;
+    window.history.pushState({}, "", path);
+    setCurrentPath(path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
+
+  const blogIndex = currentPath === "/blog";
+  const blogMatch = currentPath.match(/^\/blog\/([^/]+)\/?$/);
   const query = new URLSearchParams(window.location.search);
   const authMode = query.get("auth");
   const landingMode = query.get("landing") === "1";
