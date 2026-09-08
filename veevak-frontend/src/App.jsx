@@ -672,7 +672,7 @@ function ForecastChart({ history, forecast }) {
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px 72px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {blogPosts.map(article => (
-                <a key={article.slug} href={`/blog/${article.slug}`} style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid #e8e8f0", textDecoration: "none", transition: "transform 0.15s ease, boxShadow 0.15s ease", display: "block" }}>
+                <div key={article.slug} onClick={() => navigate(`/blog/${article.slug}`)} style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid #e8e8f0", transition: "transform 0.15s ease, boxShadow 0.15s ease", display: "block", cursor: "pointer" }}>
                   <div style={{ padding: "24px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
                       <span style={{ background: "#fff0bf", color: "#8b6b00", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, letterSpacing: "0.05em" }}>{article.category}</span>
@@ -687,7 +687,7 @@ function ForecastChart({ history, forecast }) {
                       <div style={{ fontSize: 13, color: "#c9920a", fontWeight: 600 }}>Read Article →</div>
                     </div>
                   </div>
-                </a>
+                </div>
               ))}
             </div>
           </div>
