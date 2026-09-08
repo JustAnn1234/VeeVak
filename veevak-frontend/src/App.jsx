@@ -3,6 +3,7 @@ import Landing from "./Landing";
 import Privacy from "./Privacy";
 import Terms from "./Terms";
 import BlogPost from "./BlogPost";
+import blogPosts from "./data/blogPosts.json";
 
 // ── API configuration ───────────────────────────────────────────────
 const API_BASE = "https://veevak-backend.onrender.com";
@@ -638,6 +639,69 @@ function ForecastChart({ history, forecast }) {
   const totalPoints = history.length + forecast.length;
   if (totalPoints < 2) return null;
   const w = 300, h = 70;
+
+  function BlogIndex() {
+    return (
+      <>
+        <style>{makeStyles(C)}</style>
+        <main style={{ minHeight: "100vh", background: C.bg, color: C.textPrimary, fontFamily: "Inter, sans-serif" }}>
+          <nav style={{ background: "#0a1628", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+            <a href="/?landing=1" style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+              <svg width="28" height="28" viewBox="0 0 100 100" aria-hidden="true">
+                <path d="M8 20 L35 75 L50 45" stroke="#c9920a" strokeWidth="11" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M50 45 L65 75 L92 20" stroke="#c9920a" strokeWidth="11" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ color: "#fff", fontWeight: 700, fontSize: 16, fontFamily: "Space Grotesk, sans-serif" }}>VeeVak</span>
+            </a>
+            <a href="/?landing=1" style={{ background: "#c9920a", border: "none", borderRadius: 8, padding: "8px 16px", color: "#000", fontWeight: 600, textDecoration: "none", fontSize: 13 }}>
+              Get Started
+            </a>
+          </nav>
+
+          <div style={{ background: "#0a1628", padding: "48px 24px 40px", textAlign: "center" }}>
+            <div style={{ fontSize: 12, color: "#c9920a", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>VeeVak Insights</div>
+            <h1 style={{ color: "#fff", fontSize: 28, fontWeight: 700, fontFamily: "Space Grotesk, sans-serif", maxWidth: 500, margin: "0 auto 12px" }}>
+              Knowledge for the Journey
+            </h1>
+            <p style={{ color: "#8080a8", fontSize: 14, maxWidth: 420, margin: "0 auto" }}>
+              Practical ideas for turning everyday commerce into clearer business decisions.
+            </p>
+          </div>
+
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px 72px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {blogPosts.map(article => (
+                <a key={article.slug} href={`/blog/${article.slug}`} style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid #e8e8f0", textDecoration: "none", transition: "transform 0.15s ease, boxShadow 0.15s ease", display: "block" }}>
+                  <div style={{ padding: "24px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+                      <span style={{ background: "#fff0bf", color: "#8b6b00", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, letterSpacing: "0.05em" }}>{article.category}</span>
+                      <span style={{ fontSize: 11, color: "#8080a8" }}>{article.readTime}</span>
+                      <span style={{ fontSize: 11, color: "#c8c8d8" }}>·</span>
+                      <span style={{ fontSize: 11, color: "#8080a8" }}>{article.date}</span>
+                    </div>
+                    <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0a1628", fontFamily: "Space Grotesk, sans-serif", lineHeight: 1.4, marginBottom: 8 }}>{article.title}</h2>
+                    <p style={{ fontSize: 13, color: "#5c5c7a", lineHeight: 1.6, marginBottom: 16 }}>{article.subtitle}</p>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                      <div style={{ fontSize: 12, color: "#8080a8" }}>By {article.author}</div>
+                      <div style={{ fontSize: 13, color: "#c9920a", fontWeight: 600 }}>Read Article →</div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ background: "#0a1628", padding: "32px 24px", textAlign: "center" }}>
+            <svg width="24" height="24" viewBox="0 0 100 100" style={{ marginBottom: 8 }} aria-hidden="true">
+              <path d="M8 20 L35 75 L50 45" stroke="#c9920a" strokeWidth="11" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M50 45 L65 75 L92 20" stroke="#c9920a" strokeWidth="11" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <div style={{ color: "#8080a8", fontSize: 12, marginTop: 8 }}>© 2026 VeeVak. All rights reserved.</div>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   const toX = i => (i / (totalPoints - 1)) * w;
   const toY = v => h - (v / max) * (h - 8);
@@ -2372,6 +2436,7 @@ const NAV = [
 ];
 
 export default function App() {
+  const blogIndex = window.location.pathname === "/blog";
   const blogMatch = window.location.pathname.match(/^\/blog\/([^/]+)\/?$/);
   const query = new URLSearchParams(window.location.search);
   const authMode = query.get("auth");
@@ -2496,6 +2561,7 @@ function confirmLogout() {
     setTab("home");
   }
 
+  if (blogIndex) return <BlogIndex />;
   if (blogMatch) return <BlogPost slug={decodeURIComponent(blogMatch[1])}/>;
 
   if (checkingSession) return (
