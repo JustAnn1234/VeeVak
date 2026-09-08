@@ -509,6 +509,7 @@ const makeStyles = (C) => `
   .loading-dot:nth-child(2) { animation-delay:0.15s; }
   .loading-dot:nth-child(3) { animation-delay:0.3s; }
   @keyframes pulse { 0%,80%,100%{opacity:0.3;transform:scale(0.8)}40%{opacity:1;transform:scale(1)} }
+  @keyframes blogFadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
   .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:${C.surface2}; border:1px solid ${C.gold}; color:${C.textPrimary}; padding:10px 18px; border-radius:10px; font-size:13px; z-index:300; white-space:nowrap; animation:fadeUp 0.2s ease; }
   @keyframes fadeUp { from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)} }
   .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; gap:10px; color:${C.textMuted}; }
@@ -2438,9 +2439,13 @@ const NAV = [
 export default function App() {
   const getCurrentPath = () => window.location.pathname;
   const [currentPath, setCurrentPath] = useState(getCurrentPath);
+  const [transitionKey, setTransitionKey] = useState(0);
 
   useEffect(() => {
-    const syncPath = () => setCurrentPath(window.location.pathname);
+    const syncPath = () => {
+      setCurrentPath(window.location.pathname);
+      setTransitionKey(k => k + 1);
+    };
     window.addEventListener("popstate", syncPath);
     return () => window.removeEventListener("popstate", syncPath);
   }, []);
@@ -2449,6 +2454,7 @@ export default function App() {
     if (window.location.pathname === path) return;
     window.history.pushState({}, "", path);
     setCurrentPath(path);
+    setTransitionKey(k => k + 1);
     window.dispatchEvent(new PopStateEvent("popstate"));
   };
 
@@ -2577,8 +2583,8 @@ function confirmLogout() {
     setTab("home");
   }
 
-  if (blogIndex) return <BlogIndex />;
-  if (blogMatch) return <BlogPost slug={decodeURIComponent(blogMatch[1])}/>;
+  if (blogIndex) return <div key={`blog-${transitionKey}`} style={{ animation: "blogFadeIn 0.35s ease" }}><BlogIndex /></div>;
+  if (blogMatch) return <div key={`article-${transitionKey}`} style={{ animation: "blogFadeIn 0.38s ease" }}><BlogPost slug={decodeURIComponent(blogMatch[1])}/></div>;
 
   if (checkingSession) return (
     <>
