@@ -125,6 +125,19 @@ class ConversationRequest(BaseModel):
     currency: str = "NGN"
     messages: List[ChatMessage]
 
+class ImageAnalyzeRequest(BaseModel):
+    shop_id: int
+    image_base64: str
+    mime_type: str = "image/jpeg"
+    currency: str = "NGN"
+
+
+class AudioAnalyzeRequest(BaseModel):
+    shop_id: int
+    audio_base64: str
+    mime_type: str = "audio/ogg"
+    currency: str = "NGN"
+
 # ── Authentication ───────────────────────────────────────────────────
 
 @app.post("/auth/signup")
@@ -452,6 +465,51 @@ async def product_associations(shop_id: int):
         conn.close()
     return result
 
+@app.post("/analyze/image")
+async def analyze_image(req: ImageAnalyzeRequest):
+    """
+    Extract sale information from a screenshot or image.
+    Accepts base64-encoded images (JPEG, PNG, WebP).
+    Works with WhatsApp screenshots, receipts, POS printouts, etc.
+    """
+    from ml.vision import extract_from_image
+    sym = CURRENCY_SYMBOLS.get(req.currency, "₦")
+    extraction = extract_from_image(req.image_base64, sym)
+
+    if extraction.get("has_order"):
+        save_sale(req.shop_id, extraction, date.today().isoformat(),
+                  channel=extraction.get("channel", "whatsapp"))
+
+    return extraction
+
+
+@app.post("/analyze/audio")
+async def analyze_audio(req: AudioAnalyzeRequest):
+    """
+    Extract sale or expense information from a voice note.
+    Supports OGG (WhatsApp), MP3, WAV, M4A.
+    Handles Nigerian English, Pidgin, Yoruba, Hausa, Igbo.
+    """
+    from ml.vision import extract_from_audio
+    from ml.associations import get_product_recommendations
+    sym = CURRENCY_SYMBOLS.get(req.currency, "₦")
+    extraction = extract_from_audio(req.audio_base64, req.mime_type, sym)
+
+    if extraction.get("has_order"):
+        save_sale(req.shop_id, extraction, date.today().isoformat(),
+                  channel=extraction.get("channel", "whatsapp"))
+
+    if extraction.get("has_expense") and extraction.get("expense_amount"):
+        save_expense(
+            req.shop_id,
+            extraction.get("expense_description") or "Voice note expense",
+            extraction.get("expense_amount"),
+            "other",
+            date.today().isoformat()
+        )
+
+    return extraction
+    
 
 # ── Helpers ──────────────────────────────────────────────────────────
 

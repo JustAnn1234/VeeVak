@@ -1121,6 +1121,11 @@ function LogSale({ t, currency, shopId, shopName, onSaleLogged }) {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef();
   const bottomRef = useRef();
+  const [imageResult, setImageResult] = useState(null);
+  const [voiceResult, setVoiceResult] = useState(null);
+  const [processingMedia, setProcessingMedia] = useState(false);
+  const imageRef = useRef();
+  const audioRef = useRef();
 
   useEffect(() => { bottomRef.current?.scrollIntoView({behavior:"smooth"}); }, [messages]);
 
@@ -1195,11 +1200,65 @@ function LogSale({ t, currency, shopId, shopName, onSaleLogged }) {
     setUploading(false);
   }
 
+  async function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setProcessingMedia(true);
+    setImageResult(null);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result.split(",")[1];
+        const mimeType = file.type || "image/jpeg";
+        const result = await apiPost("/analyze/image", {
+          shop_id: shopId,
+          image_base64: base64,
+          mime_type: mimeType,
+          currency,
+        });
+        setImageResult(result);
+        if (result.has_order) onSaleLogged?.();
+      };
+      reader.readAsDataURL(file);
+    } catch (e) {
+      setImageResult({ has_order: false, error: "Failed to process image." });
+    }
+    setProcessingMedia(false);
+  }
+
+  async function handleAudioUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setProcessingMedia(true);
+    setVoiceResult(null);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result.split(",")[1];
+        const mimeType = file.type || "audio/ogg";
+        const result = await apiPost("/analyze/audio", {
+          shop_id: shopId,
+          audio_base64: base64,
+          mime_type: mimeType,
+          currency,
+        });
+        setVoiceResult(result);
+        if (result.has_order || result.has_expense) onSaleLogged?.();
+      };
+      reader.readAsDataURL(file);
+    } catch (e) {
+      setVoiceResult({ has_order: false, error: "Failed to process audio." });
+    }
+    setProcessingMedia(false);
+  }
+
   const modes = [
-    {key:"form",icon:"📋",title:t.quickForm,desc:t.fillForm},
-    {key:"upload",icon:"📂",title:t.uploadChat,desc:t.whatsappExport},
-    {key:"paste",icon:"💬",title:t.pasteChat,desc:t.pasteConvos},
-    {key:"chat",icon:"🤖",title:t.aiChat,desc:t.talkAssistant},
+    {key:"form",   icon:"📋", title:t.quickForm,   desc:t.fillForm},
+    {key:"upload", icon:"📂", title:t.uploadChat,  desc:t.whatsappExport},
+    {key:"paste",  icon:"💬", title:t.pasteChat,   desc:t.pasteConvos},
+    {key:"chat",   icon:"🤖", title:t.aiChat,      desc:t.talkAssistant},
+    {key:"image",  icon:"🖼️", title:"Screenshot",  desc:"Photo or screenshot"},
+    {key:"voice",  icon:"🎙️", title:"Voice Note",  desc:"Record or upload audio"},
   ];
 
   return (
@@ -1277,6 +1336,97 @@ function LogSale({ t, currency, shopId, shopName, onSaleLogged }) {
           )}
         </div>
       )}
+
+      {mode==="image" && (
+  <div className="card">
+    <div className="card-label" style={{marginBottom:8}}>Screenshot Extraction</div>
+    <div style={{fontSize:12,color:C.textSecondary,marginBottom:12}}>
+      Upload any sales screenshot — WhatsApp chat, Instagram DM, payment receipt, bank transfer alert, or POS receipt.
+    </div>
+    <div className="file-upload-zone" onClick={()=>imageRef.current?.click()}>
+      <div className="file-upload-icon">🖼️</div>
+      <div className="file-upload-text">Tap to select a screenshot or photo</div>
+      <div className="file-upload-sub">Supports JPG, PNG, WebP — WhatsApp, Instagram, receipts</div>
+      <input ref={imageRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleImageUpload}/>
+    </div>
+    {processingMedia && (
+      <div style={{textAlign:"center",padding:"16px 0",fontSize:13,color:C.textSecondary}}>
+        <span className="loading-dot"/><span className="loading-dot"/><span className="loading-dot"/>
+        <div style={{marginTop:8}}>Analyzing image...</div>
+      </div>
+    )}
+    {imageResult && (
+      <div style={{marginTop:12,padding:"12px 14px",background:C.surface2,borderRadius:10,border:`1px solid ${C.border}`}}>
+        {imageResult.has_order ? (
+          <>
+            <div style={{fontSize:13,fontWeight:600,color:C.greenText,marginBottom:6}}>✓ Sale extracted and logged</div>
+            <div style={{fontSize:12,color:C.textSecondary}}>Customer: {imageResult.customer_name || "Unknown"}</div>
+            <div style={{fontSize:12,color:C.textSecondary}}>Total: {fmt(imageResult.order_total||0, currency)}</div>
+            <div style={{fontSize:12,color:C.textSecondary}}>Status: {imageResult.payment_status}</div>
+            {(imageResult.products||[]).map((p,i)=>(
+              <div key={i} style={{fontSize:11,color:C.textMuted,marginTop:4}}>• {p.name} x{p.quantity||1} — {fmt(p.total_price||0,currency)}</div>
+            ))}
+          </>
+        ) : (
+          <>
+            <div style={{fontSize:13,color:C.textMuted}}>No clear sale found in this image.</div>
+            {imageResult.error && <div style={{fontSize:11,color:C.redText,marginTop:4}}>{imageResult.error}</div>}
+            <div style={{fontSize:11,color:C.textMuted,marginTop:4}}>Try a clearer screenshot, or use the AI Chat to type the sale manually.</div>
+          </>
+        )}
+      </div>
+    )}
+  </div>
+)}
+
+{mode==="voice" && (
+  <div className="card">
+    <div className="card-label" style={{marginBottom:8}}>Voice Note Extraction</div>
+    <div style={{fontSize:12,color:C.textSecondary,marginBottom:12}}>
+      Upload a voice note describing your sales or expenses. Works in English, Pidgin, Yoruba, Hausa, and Igbo.
+    </div>
+    <div className="file-upload-zone" onClick={()=>audioRef.current?.click()}>
+      <div className="file-upload-icon">🎙️</div>
+      <div className="file-upload-text">Tap to select a voice note or audio file</div>
+      <div className="file-upload-sub">Supports OGG (WhatsApp), MP3, WAV, M4A</div>
+      <input ref={audioRef} type="file" accept="audio/*" style={{display:"none"}} onChange={handleAudioUpload}/>
+    </div>
+    {processingMedia && (
+      <div style={{textAlign:"center",padding:"16px 0",fontSize:13,color:C.textSecondary}}>
+        <span className="loading-dot"/><span className="loading-dot"/><span className="loading-dot"/>
+        <div style={{marginTop:8}}>Transcribing and analyzing...</div>
+      </div>
+    )}
+    {voiceResult && (
+      <div style={{marginTop:12,padding:"12px 14px",background:C.surface2,borderRadius:10,border:`1px solid ${C.border}`}}>
+        {voiceResult.transcription && (
+          <div style={{fontSize:11,color:C.textMuted,marginBottom:10,fontStyle:"italic",borderBottom:`1px solid ${C.border}`,paddingBottom:8}}>
+            "{voiceResult.transcription}"
+          </div>
+        )}
+        {voiceResult.has_order ? (
+          <>
+            <div style={{fontSize:13,fontWeight:600,color:C.greenText,marginBottom:6}}>✓ Sale logged from voice note</div>
+            <div style={{fontSize:12,color:C.textSecondary}}>Customer: {voiceResult.customer_name || "Unknown"}</div>
+            <div style={{fontSize:12,color:C.textSecondary}}>Total: {fmt(voiceResult.order_total||0, currency)}</div>
+            <div style={{fontSize:12,color:C.textSecondary}}>Payment: {voiceResult.payment_status}</div>
+          </>
+        ) : voiceResult.has_expense ? (
+          <>
+            <div style={{fontSize:13,fontWeight:600,color:"#fb923c",marginBottom:6}}>✓ Expense logged from voice note</div>
+            <div style={{fontSize:12,color:C.textSecondary}}>{voiceResult.expense_description}</div>
+            <div style={{fontSize:12,color:C.textSecondary}}>Amount: {fmt(voiceResult.expense_amount||0, currency)}</div>
+          </>
+        ) : (
+          <>
+            <div style={{fontSize:13,color:C.textMuted}}>No clear sale or expense found in this voice note.</div>
+            {voiceResult.error && <div style={{fontSize:11,color:C.redText,marginTop:4}}>{voiceResult.error}</div>}
+          </>
+        )}
+      </div>
+    )}
+  </div>
+)}
 
       <div className="input-modes">
         {modes.map(m => (
